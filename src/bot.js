@@ -27,55 +27,14 @@ client.on("message", (msg) => {
     //     console.log(msg.reactions);
     //   }
     // }
+
+    if (CMD_NAME === "time") {
+      utiles.checkTime(msg);
+    }
   }
-  // msg.awaitReactions(filter,{}).then(collected=>collected.first())
 });
 
 utiles.regulationsAccept(client);
-
-client.on("messageReactionAdd", (reactions, user) => {
-  const { name } = reactions.emoji;
-  const mebmer = reactions.message.guild.members.cache.get(user.id);
-  if (reactions.message.id === "766983722087219251") {
-    switch (name) {
-      case "💩":
-        mebmer.roles.add("766979755199037440");
-        break;
-      case "🍎":
-        mebmer.roles.add("766979782528598016");
-        break;
-
-      case "🍌":
-        mebmer.roles.add("766979796005552160");
-        break;
-
-      default:
-        break;
-    }
-  }
-});
-
-client.on("messageReactionRemove", (reactions, user) => {
-  const { name } = reactions.emoji;
-  const mebmer = reactions.message.guild.members.cache.get(user.id);
-  if (reactions.message.id === "766983722087219251") {
-    switch (name) {
-      case "💩":
-        mebmer.roles.remove("766979755199037440");
-        break;
-      case "🍎":
-        mebmer.roles.remove("766979782528598016");
-        break;
-
-      case "🍌":
-        mebmer.roles.remove("766979796005552160");
-        break;
-
-      default:
-        break;
-    }
-  }
-});
 
 //on key create role
 
