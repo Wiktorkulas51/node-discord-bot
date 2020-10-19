@@ -25,7 +25,7 @@ function regulationsAccept(client) {
         client.on("messageReactionAdd", (reactions, user) => {
           const { name } = reactions.emoji;
           const mebmer = reactions.message.guild.members.cache.get(user.id);
-          if (!msg.author.bot) return;
+          if (user.username === "nodeBot-test") return;
           switch (name) {
             case reactionEmoji:
               mebmer.roles.add("766979782528598016");
@@ -69,24 +69,11 @@ function fetchUser(msg, id) {
 function getTimeByData(data, msg) {
   const time = data.joinedTimestamp;
   const msgCreAt = msg.createdAt;
-  console.log(new Date(time).toUTCString());
-  console.log("getTimeByData -> msgCreAt", msgCreAt);
-  const diff = msgCreAt - new Date(time);
-  console.log("getTimeByData -> diff", diff);
-
-  const lastdif = new Date(diff) / (1000 * 60 * 60 * 24);
-  const newdata = new Date(lastdif);
-  const finalTime =
-    newdata.getMilliseconds() +
-    " , " +
-    newdata.getSeconds() +
-    " , " +
-    newdata.getHours() +
-    " , " +
-    newdata.getDay();
-
-  console.log(finalTime);
-  return finalTime;
+  const diff = new Date(msgCreAt).getTime() - time;
+  const timeInHours = new Date(diff).getHours();
+  const timeInDays = new Date(diff).getDate();
+  console.log(timeInDays);
+  return `${timeInDays} days and ${timeInHours} hours`;
 }
 
 function checkTime(msg) {
@@ -97,16 +84,18 @@ function checkTime(msg) {
       .setDescription(
         `
       User: ${msg.author.tag}
-      The time you have been spent on this channel is ${getTimeByData(
-        data,
-        msg
-      )}
+      The time you have been spent on this channel ${getTimeByData(data, msg)}
         `
       )
       .setColor(0xdd9323);
 
     msg.channel.send(msgEmbOnTime);
   });
+}
+
+function dateWhenUserJoinChannel(msg, connect) {
+  const id = msg.author.id;
+  fetchUser(msg, id).then((data) => {});
 }
 
 module.exports = {

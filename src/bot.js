@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { default: Collection } = require("@discordjs/collection");
 const { Client } = require("discord.js");
 const utiles = require("./utiles");
 
@@ -7,6 +6,18 @@ const client = new Client({
   partials: ["MESSAGE", "REACTION"],
 });
 const prefix = "$";
+
+// client.on("voiceStateUpdate", async (data) => {
+//   console.log(
+//     "data createdat",
+//     await data.guild.createdAt.toLocaleTimeString()
+//   );
+//   console.log("data joinat", await data.guild.joinedAt.toLocaleTimeString());
+//   console.log(
+//     "data jointimestamp",
+//     await new Date(data.guild.joinedTimestamp).toLocaleTimeString()
+//   );
+// });
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -29,6 +40,9 @@ client.on("message", (msg) => {
     // }
 
     if (CMD_NAME === "time") {
+      console.log(msg.member.voice);
+      // const connection = msg.member.voice.channel.join();
+      // console.log(connection);
       utiles.checkTime(msg);
     }
   }
