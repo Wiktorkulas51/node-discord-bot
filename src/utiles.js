@@ -72,7 +72,6 @@ function getTimeByData(data, msg) {
   const diff = new Date(msgCreAt).getTime() - time;
   const timeInHours = new Date(diff).getHours();
   const timeInDays = new Date(diff).getDate();
-  console.log(timeInDays);
   return `${timeInDays} days and ${timeInHours} hours`;
 }
 
