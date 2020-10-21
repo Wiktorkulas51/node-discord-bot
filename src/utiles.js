@@ -71,7 +71,8 @@ function getTimeByData(data, msg) {
   const msgCreAt = msg.createdAt;
   const diff = new Date(msgCreAt).getTime() - time;
   const timeInHours = new Date(diff).getHours();
-  const timeInDays = new Date(diff).getDate();
+  const timeInDays = new Date(diff).getDay();
+  //time sie nie sprawdza
   return `${timeInDays} days and ${timeInHours} hours`;
 }
 
@@ -83,18 +84,13 @@ function checkTime(msg) {
       .setDescription(
         `
       User: ${msg.author.tag}
-      The time you have been spent on this channel ${getTimeByData(data, msg)}
+      Time for the start: ${getTimeByData(data, msg)}
         `
       )
       .setColor(0xdd9323);
 
     msg.channel.send(msgEmbOnTime);
   });
-}
-
-function dateWhenUserJoinChannel(msg, connect) {
-  const id = msg.author.id;
-  fetchUser(msg, id).then((data) => {});
 }
 
 module.exports = {

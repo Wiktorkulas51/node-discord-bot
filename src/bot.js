@@ -13,8 +13,7 @@ client.on("voiceStateUpdate", (data) => {
     const user = data.member.user;
     const name = data.member.user.username;
     const newUser = new UserTime(data, user, name);
-    newUser.time();
-    console.log("ture");
+    newUser.time(data);
   }
 });
 
@@ -39,8 +38,7 @@ client.on("message", (msg) => {
     // }
 
     if (CMD_NAME === "time") {
-      console.log("msgmembervoice", msg.member.voice);
-
+      console.log(msg.guild.roles);
       utiles.checkTime(msg);
     }
   }

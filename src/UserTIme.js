@@ -6,8 +6,16 @@ module.exports = class UserTime {
     this.data = data;
     this.user = user;
     this.name = name;
-    this.userTime = Date.now();
-    this.counter = 0;
+    this.userTimeJoined = Date.now();
+    this.diff = null;
+    this.userTimeLeft = Date.now();
+    this.userObj = {
+      name: this.name,
+      useriD: this.user.id,
+      userJoind: this.userTimeJoined,
+      userLeft: this.userTimeLeft,
+      userTimeDiff: this.diff,
+    };
   }
 
   checkDir(dirName) {
@@ -36,20 +44,10 @@ module.exports = class UserTime {
 
   //make new function in order to read userData.json file
 
-  time() {
-    setInterval(() => {
-      this.counter++;
-      const timeCounter = this.userTime + this.counter;
-
-      const userObj = {
-        name: this.name,
-        useriD: this.user.id,
-        userTime: timeCounter,
-      };
-      let userData = JSON.stringify(userObj);
+  time(data) {
+    if (data) {
+      let userData = JSON.stringify(this.userObj);
       this.writeFileOndate(userData);
-
-      console.log(timeCounter);
-    }, 1000);
+    }
   }
 };
