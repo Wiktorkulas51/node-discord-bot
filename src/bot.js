@@ -4,16 +4,14 @@ const utiles = require("./utiles");
 const UserTime = require("./UserTIme");
 
 const client = new Client({
-  partials: ["MESSAGE", "REACTION"],
+  partials: ["MESSAGE", "CHANNEL", "REACTION"],
 });
 const prefix = "$";
 
-client.on("voiceStateUpdate", (data) => {
-  if (data) {
-    const user = data.member.user;
-    const name = data.member.user.username;
-    const newUser = new UserTime(data, user, name);
-    newUser.time(data);
+client.on("voiceStateUpdate", (oldMember, newMember) => {
+  if (oldMember) {
+    const newUser = new UserTime(oldMember, newMember);
+    newUser.time();
   }
 });
 
@@ -38,7 +36,7 @@ client.on("message", (msg) => {
     // }
 
     if (CMD_NAME === "time") {
-      console.log(msg.guild.roles);
+      // console.log(msg.guild.roles);
       utiles.checkTime(msg);
     }
   }

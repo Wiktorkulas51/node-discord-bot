@@ -1,14 +1,17 @@
 const fs = require("fs");
 const path = require("path");
+const randkey = require("random-keygen");
+const replace = require("replace-in-file");
 
 module.exports = class UserTime {
-  constructor(data, user, name) {
-    this.data = data;
-    this.user = user;
-    this.name = name;
-    this.userTimeJoined = Date.now();
+  constructor(oldMember, newMember) {
+    this.oldMember = oldMember;
+    this.newMember = newMember;
+    this.user = this.oldMember.member.user;
+    this.name = this.oldMember.member.user.username;
+    this.userTimeJoined = null;
     this.diff = null;
-    this.userTimeLeft = Date.now();
+    this.userTimeLeft = null;
     this.userObj = {
       name: this.name,
       useriD: this.user.id,
@@ -18,36 +21,77 @@ module.exports = class UserTime {
     };
   }
 
+  keyGen() {
+    let key = randkey.get({
+      length: 10,
+      numbers: true,
+    });
+    return key;
+  }
+
   checkDir(dirName) {
-    fs.access(path.join(__dirname, dirName), fs.constants.F_OK, (err) => {
-      console.log(`${dirName} ${err ? "does not exist" : "exists"}`);
-    });
-    fs.mkdir(path.join(__dirname, dirName), (err) => {
-      if (err.code === "EEXIST") return;
-    });
+    fs.access(
+      path.join(
+        __dirname,
+        dirName === "usersData.json" ? "./files/usersData.json" : dirName
+      ),
+      fs.constants.F_OK,
+      (err) => {
+        console.log(`${dirName} ${err ? "does not exist" : "exists"}`);
+      }
+    );
+    fs.mkdir(
+      path.join(
+        __dirname,
+        dirName === "usersData.json" ? "./files/usersData.json" : dirName
+      ),
+      (err) => {
+        if (err.code === "EEXIST") return;
+      }
+    );
   }
 
-  writeFileOndate(userData) {
-    if (!this.checkDir("files")) {
-      fs.writeFile(
-        path.join(__dirname, "./files", "usersData.json"),
-        userData,
-        (err) => {
-          if (err) throw err;
-          console.log("The file has been saved!");
-        }
-      );
-    }
-  }
+  async time() {
+    let key = this.keyGen();
 
-  //use function writefile only when user leaving channel
-
-  //make new function in order to read userData.json file
-
-  time(data) {
-    if (data) {
+    if (this.newMember.channelID) {
+      console.log("newme");
+      this.userObj.userJoind = Date.now();
       let userData = JSON.stringify(this.userObj);
-      this.writeFileOndate(userData);
+      if (!this.checkDir("usersData.json")) {
+        fs.appendFile(
+          path.join(__dirname, "./files", "usersData.json"),
+          `[{ "key":"${key}", "userData":${userData}},]`,
+          (err) => {
+            if (err) throw err;
+          }
+        );
+      }
+    }
+
+    if (this.oldMember.channelID) {
+      console.log("old");
+      this.userObj.userLeft = Date.now();
+      // let userData = JSON.stringify(this.userObj);
+      const options = {
+        files: path.join(__dirname, "./files", "usersData.json"),
+        from: '"userLeft":null',
+        to: `"userLeft":${this.userObj.userLeft}`,
+      };
+      try {
+        const results = await replace(options);
+        console.log("Replacement results:", results);
+      } catch (error) {
+        console.error("Error occurred:", error);
+      }
+
+      // fs.appendFile(
+      //   path.join(__dirname, "./files", "usersData.json"),
+      //   `[{ "key:${key}", "userData":${userData}}]`,
+      //   (err) => {
+      //     if (err) throw err;
+      //   }
+      // );
     }
   }
 };

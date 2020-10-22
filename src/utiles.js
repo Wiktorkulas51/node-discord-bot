@@ -1,5 +1,4 @@
 const { MessageEmbed } = require("discord.js");
-
 function regulationsAccept(client) {
   const reactionEmoji = "🆗";
   client.on("message", (msg) => {
@@ -70,6 +69,7 @@ function getTimeByData(data, msg) {
   const time = data.joinedTimestamp;
   const msgCreAt = msg.createdAt;
   const diff = new Date(msgCreAt).getTime() - time;
+  console.log("dif", new Date(diff));
   const timeInHours = new Date(diff).getHours();
   const timeInDays = new Date(diff).getDay();
   //time sie nie sprawdza
