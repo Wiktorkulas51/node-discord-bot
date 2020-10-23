@@ -9,10 +9,11 @@ const client = new Client({
 const prefix = "$";
 
 client.on("voiceStateUpdate", (oldMember, newMember) => {
-  if (oldMember) {
-    const newUser = new UserTime(oldMember, newMember);
-    newUser.time();
+  if (newMember.member.user.id !== oldMember.member.user.id) {
+    console.log("turess");
   }
+  const newUser = new UserTime(oldMember, newMember);
+  newUser.time();
 });
 
 client.on("ready", () => {

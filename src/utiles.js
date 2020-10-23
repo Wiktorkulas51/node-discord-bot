@@ -23,17 +23,17 @@ function regulationsAccept(client) {
         msg.react("🎹");
         client.on("messageReactionAdd", (reactions, user) => {
           const { name } = reactions.emoji;
-          const mebmer = reactions.message.guild.members.cache.get(user.id);
+          const member = reactions.message.guild.members.cache.get(user.id);
           if (user.username === "nodeBot-test") return;
           switch (name) {
             case reactionEmoji:
-              mebmer.roles.add("766979782528598016");
+              member.roles.add("766979782528598016");
               break;
             case "🔥":
-              mebmer.roles.add("767315838662737960");
+              member.roles.add("767315838662737960");
               break;
             case "🎹":
-              mebmer.roles.add("767316060365258753");
+              member.roles.add("767316060365258753");
             default:
               break;
           }
