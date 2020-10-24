@@ -11,8 +11,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "discord.js": "^12.3.1",
+        "discord.js": "^12.4.1",
         "dotenv": "^8.2.0",
+        "nconf": "^0.10.0",
         "random-keygen": "^1.0.4",
         "replace-in-file": "^6.1.0"
     }

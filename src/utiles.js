@@ -84,7 +84,7 @@ function checkTime(msg) {
       .setDescription(
         `
       User: ${msg.author.tag}
-      Time for the start: ${getTimeByData(data, msg)}
+      Time from joined: ${getTimeByData(data, msg)}
         `
       )
       .setColor(0xdd9323);
