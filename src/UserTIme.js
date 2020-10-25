@@ -21,13 +21,65 @@ module.exports = class UserTime {
     };
   }
 
-  checkDiff(joind, left, diffTime) {
+  changeNumbers(val) {
+    const valInTime = new Date(val);
+    const valInSec = valInTime.getSeconds();
+    // const valInMin = valInTime.getMinutes();
+    // const valInHours = valInTime.getHours();
+    // const valInDays = valInTime.getDay();
+    // const valInMonths = valInTime.getMonth();
+    // const valInYears = valInTime.getFullYear();
+    // console.log(val);
+    // if (valInSec <= 59 && valInMin <= 59 && valInMonths <= 12) {
+    //   return `Time: Months:${valInMonths} days:${
+    //     valInHours <= 24 ? valInDays : 0
+    //   } hours:${
+    //     valInMin <= 59 ? valInHours : 0
+    //   } Min:${valInMin} sec${valInSec}`;
+    // }
+    let min = 0;
+    let hours = 0;
+    let days = 0;
+    let weeks = 0;
+    let month = 0;
+    let year = 0;
+    if (valInSec <= 59) {
+      min++;
+      if (min >= 59) {
+        hours++;
+        if (hours !== 24) {
+          min = 0;
+          days++;
+          if (days !== 7) {
+            hours = 0;
+            weeks++;
+          }
+          if (weeks !== 4) {
+            days = 0;
+            month++;
+            if (month !== 12) {
+              month = 0;
+              year++;
+              return `Time years: ${year} months: ${month} weeks: ${weeks} days: ${days} hours: ${hours} min: ${min} sec:${valInSec}`;
+            }
+          }
+        }
+        return `Time min: ${min} sec: ${valInSec}`;
+      }
+      return `Time min: ${min} sec: ${valInSec}`;
+    }
+  }
+
+  async checkDiff(joind, left, diffTime) {
     if (diffTime === null) {
-      const diff = joind - left;
-      return diff;
+      const diff = joind - (await left);
+      console.log("diff", diff, "left", left);
+      return Math.abs(diff);
     } else {
       const diff = joind - left;
-      const addedDiffTime = diff + diff;
+      console.log("secDiff", diff);
+      const addedDiffTime = diff + diffTime;
+      console.log("addeddiff", addedDiffTime);
       return addedDiffTime;
     }
   }
@@ -53,7 +105,6 @@ module.exports = class UserTime {
     for (let key in obj) {
       if (obj.hasOwnProperty(key)) return false;
     }
-    console.log(obj);
     return true;
   }
 
@@ -94,10 +145,6 @@ module.exports = class UserTime {
 
       const jsonDate = await this.readingFileSync("usersData.json");
 
-      const jsonUserJoinedData = jsonDate.userData.userJoind;
-      const jsonUserLeftData = jsonDate.userData.userLeft;
-      const jsonUserDiffData = jsonDate.userData.userTimeDiff;
-
       if (this.newMember.channelID) {
         console.log(jsonDate);
 
@@ -131,6 +178,8 @@ module.exports = class UserTime {
             }
           }
         } else {
+          const jsonUserJoinedData = jsonDate.userData.userJoind;
+
           console.log(
             "UserTime -> time -> jsonUserJoinedData",
             jsonUserJoinedData
@@ -154,19 +203,26 @@ module.exports = class UserTime {
 
       if (this.oldMember.channelID) {
         this.userObj.userLeft = Date.now();
+        const jsonUserLeftData = jsonDate.userData.userLeft;
+        const jsonUserDiffData = jsonDate.userData.userTimeDiff;
+        console.log("userleft", jsonUserLeftData);
 
         const options = {
           files: path.join(__dirname, "./files", "usersData.json"),
           from: `"userLeft": ${jsonUserLeftData ? jsonUserLeftData : null},`,
           to: `"userLeft": ${this.userObj.userLeft},`,
         };
-        this.replaceFunc(options);
+        await this.replaceFunc(options);
 
         const diff = this.checkDiff(
-          jsonUserJoinedData,
-          jsonUserLeftData,
+          jsonDate.userData.userJoind,
+          (await jsonUserLeftData) === null
+            ? this.userObj.userLeft
+            : jsonUserLeftData,
           jsonUserDiffData
         );
+        const val = this.changeNumbers(await diff);
+        console.log("val", val);
 
         if (diff) {
           const options = {
@@ -174,7 +230,7 @@ module.exports = class UserTime {
             from: `"userTimeDiff": ${
               jsonUserDiffData ? jsonUserDiffData : null
             }`,
-            to: `"userTimeDiff": ${diff}`,
+            to: `"userTimeDiff": ${await diff}`,
           };
           this.replaceFunc(options);
         }

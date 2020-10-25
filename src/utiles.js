@@ -2,7 +2,7 @@ const { MessageEmbed } = require("discord.js");
 function regulationsAccept(client) {
   const reactionEmoji = "🆗";
   client.on("message", (msg) => {
-    if (msg.channel.id === "766995099670020126") {
+    if (msg.channel.id === "769641089668874321") {
       if (msg.author.bot) return;
 
       const MsgEmb = new MessageEmbed()
