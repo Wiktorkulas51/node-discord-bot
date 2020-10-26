@@ -38,6 +38,7 @@ client.on("message", (msg) => {
 
     if (CMD_NAME === "time") {
       // console.log(msg.guild.roles);
+
       utiles.checkTime(msg);
     }
   }

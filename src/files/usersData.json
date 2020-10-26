@@ -1,10 +1,19 @@
-{
+[{
     "key": "6u40X1BCQ7",
     "userData": {
         "name": "hiimwiktor",
         "useriD": "278950668558139392",
         "userJoind": 1603648149390,
-        "userLeft": 1603648170926,
-        "userTimeDiff": 196779
+        "userLeft": 1603651616124,
+        "userTimeDiff": 175243
     }
-}
+}, {
+    "key": "vtMrG5RHJx",
+    "userData": {
+        "name": "wiktortest51",
+        "useriD": "770385819457683457",
+        "userJoind": 1603744809175,
+        "userLeft": null,
+        "userTimeDiff": null
+    }
+}]

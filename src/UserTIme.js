@@ -151,6 +151,21 @@ module.exports = class UserTime {
         this.userObj.userJoind = Date.now();
         const dateNow = Date.now();
 
+        if (jsonDate.userData.useriD !== this.user.id) {
+          console.log("inny user");
+          key = this.keyGen();
+          let userData = JSON.stringify(this.userObj, null, 4);
+          if (!this.checkDir("usersData.json")) {
+            fs.appendFile(
+              path.join(__dirname, "./files", "usersData.json"),
+              `{ "key":"${key}", "userData":${userData}}`,
+              (err) => {
+                if (err) throw err;
+              }
+            );
+          }
+        }
+
         if (this.isEmpty(jsonDate)) {
           console.log("empty");
           let userData = JSON.stringify(this.userObj, null, 4);
@@ -162,20 +177,6 @@ module.exports = class UserTime {
                 if (err) throw err;
               }
             );
-          }
-          if (jsonDate.userData.useriD !== this.user.id) {
-            console.log("inny user");
-            key = this.keyGen();
-            let userData = JSON.stringify(this.userObj, null, 4);
-            if (!this.checkDir("usersData.json")) {
-              fs.appendFile(
-                path.join(__dirname, "./files", "usersData.json"),
-                `{ "key":"${key}", "userData":${userData}}`,
-                (err) => {
-                  if (err) throw err;
-                }
-              );
-            }
           }
         } else {
           const jsonUserJoinedData = jsonDate.userData.userJoind;
