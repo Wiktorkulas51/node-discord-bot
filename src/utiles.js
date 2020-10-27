@@ -1,4 +1,7 @@
-const { MessageEmbed } = require("discord.js");
+const { MessageEmbed, SystemChannelFlags } = require("discord.js");
+const fs = require("fs");
+const path = require("path");
+
 function regulationsAccept(client) {
   const reactionEmoji = "🆗";
   client.on("message", (msg) => {
@@ -93,8 +96,80 @@ function checkTime(msg) {
   });
 }
 
+function isEmpty(obj) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) return false;
+  }
+  return true;
+}
+
+function readingFileSync(fileName) {
+  const fileDate = fs.readFileSync(path.join(__dirname, "./files", fileName));
+  if (isEmpty(fileDate)) {
+    console.log(fileDate);
+    return null;
+  }
+  return JSON.parse(fileDate);
+}
+
+const format = ({ sec, min, hours, days, months, years }) => {
+  const pluralize = (word, count) => {
+    if (!count) return;
+
+    const maybePluralWord = `${word}${count > 1 ? "s" : ""}`;
+    return `${count} ${maybePluralWord}`;
+  };
+
+  const checkNumb = (num, spec) => {
+    if (num >= spec) {
+      for (let i = 0; i < spec; i++) {
+        console.log((num = i));
+        return (num = i);
+      }
+    }
+  };
+
+  return [
+    pluralize("year", years),
+    pluralize("month", months),
+    pluralize("day", days),
+    pluralize("hour", hours),
+    pluralize("minute", min),
+    pluralize("second", sec),
+    console.log("format -> (sec[0] = 0)", (sec[0] = 1)),
+  ]
+    .filter(Boolean)
+    .join(", ");
+};
+
+function timeCounter(val) {
+  const diff = val;
+
+  let secDiff = Math.abs(diff) / 1000;
+  console.log("sec", secDiff);
+  let minDiff = secDiff / 60;
+  console.log("minDiff", minDiff);
+  const hoursDiff = minDiff / 24;
+  const daysDiff = hoursDiff / 31;
+  const monthsDiff = daysDiff / 12;
+  const yearsDiff = monthsDiff / 365;
+
+  return {
+    sec: Math.floor(secDiff),
+    min: Math.floor(minDiff),
+    hours: Math.floor(hoursDiff),
+    days: Math.floor(daysDiff),
+    months: Math.floor(monthsDiff),
+    years: Math.floor(yearsDiff),
+  };
+}
+
 module.exports = {
   regulationsAccept,
   checkTime,
   fetchUser,
+  format,
+  timeCounter,
+  readingFileSync,
+  isEmpty,
 };

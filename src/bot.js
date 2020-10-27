@@ -20,7 +20,7 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on("message", (msg) => {
+client.on("message", async (msg) => {
   if (msg.author.bot) return;
   if (msg.content.startsWith(prefix)) {
     const [CMD_NAME, ...args] = msg.content
@@ -37,9 +37,17 @@ client.on("message", (msg) => {
     // }
 
     if (CMD_NAME === "time") {
-      // console.log(msg.guild.roles);
+      const jsonData = await utiles.readingFileSync("usersData.json");
+      const diff = jsonData.userData.userTimeDiff;
+      const time = utiles.timeCounter(diff);
 
-      utiles.checkTime(msg);
+      msg.reply(
+        time.sec === 0 && time.min === 0
+          ? "nie byłes jeszcze na żadnym kanale"
+          : utiles.format(time)
+      );
+
+      // utiles.checkTime(msg);
     }
   }
 });
