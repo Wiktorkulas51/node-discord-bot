@@ -38,14 +38,25 @@ client.on("message", async (msg) => {
 
     if (CMD_NAME === "time") {
       const jsonData = await utiles.readingFileSync("usersData.json");
-      const diff = jsonData.userData.userTimeDiff;
-      const time = utiles.timeCounter(diff);
+      //check whitch user is doing this
 
-      msg.reply(
-        time.sec === 0 && time.min === 0
-          ? "nie byłes jeszcze na żadnym kanale"
-          : utiles.format(time)
-      );
+      jsonData.forEach(async (el) => {
+        if (
+          msg.author.username !== el.userData.name &&
+          msg.author.id !== el.userData.useriD
+        ) {
+          const diff = el.userData.userTimeDiff;
+          const time = utiles.timeCounter(diff);
+          await utiles.format(time);
+
+          msg.delete();
+          msg.reply(
+            time.sec === 0 && time.min === 0
+              ? "nie byłes jeszcze na żadnym kanale"
+              : utiles.format(time)
+          );
+        }
+      });
 
       // utiles.checkTime(msg);
     }

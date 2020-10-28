@@ -1,4 +1,4 @@
-const { MessageEmbed, SystemChannelFlags } = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 
@@ -12,8 +12,7 @@ function regulationsAccept(client) {
         .setTitle(`use reaction ${reactionEmoji}`)
         .setDescription(
           `
-          if you accept what we have said than you can 
-          use reaction ${reactionEmoji} and move forword
+     asd
           
         `
         )
@@ -120,23 +119,13 @@ const format = ({ sec, min, hours, days, months, years }) => {
     return `${count} ${maybePluralWord}`;
   };
 
-  const checkNumb = (num, spec) => {
-    if (num >= spec) {
-      for (let i = 0; i < spec; i++) {
-        console.log((num = i));
-        return (num = i);
-      }
-    }
-  };
-
   return [
-    pluralize("year", years),
-    pluralize("month", months),
-    pluralize("day", days),
-    pluralize("hour", hours),
-    pluralize("minute", min),
-    pluralize("second", sec),
-    console.log("format -> (sec[0] = 0)", (sec[0] = 1)),
+    pluralize("year", years % 365),
+    pluralize("month", months % 12),
+    pluralize("day", days % 7),
+    pluralize("hour", hours % 24),
+    pluralize("minute", min % 60),
+    pluralize("second", sec % 60),
   ]
     .filter(Boolean)
     .join(", ");
@@ -146,9 +135,7 @@ function timeCounter(val) {
   const diff = val;
 
   let secDiff = Math.abs(diff) / 1000;
-  console.log("sec", secDiff);
   let minDiff = secDiff / 60;
-  console.log("minDiff", minDiff);
   const hoursDiff = minDiff / 24;
   const daysDiff = hoursDiff / 31;
   const monthsDiff = daysDiff / 12;
