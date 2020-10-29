@@ -1,8 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const randkey = require("random-keygen");
-const replace = require("replace-in-file");
 const utiles = require("./utiles");
+
+const replace = require("replace");
 
 module.exports = class UserTime {
   constructor(oldMember, newMember) {
@@ -30,24 +31,11 @@ module.exports = class UserTime {
   async updateDiff(joind, left, diffTime) {
     if (diffTime === null) {
       const diff = joind - (await left);
-      console.log("diff", diff, "left", left);
       return Math.abs(diff);
     } else {
-      console.log(left);
       const diff = joind - left;
-      console.log(diff);
       const addedDiffTime = Math.abs(diff) + diffTime;
-      console.log(addedDiffTime);
       return addedDiffTime;
-    }
-  }
-
-  async replaceFunc(options) {
-    try {
-      const results = await replace(options);
-      console.log("Replacement results:", results);
-    } catch (error) {
-      console.error("Error occurred:", error);
     }
   }
 
@@ -95,7 +83,7 @@ module.exports = class UserTime {
         if (this.checkDir("usersData.json")) {
           fs.appendFileSync(
             path.join(__dirname, "./files", "usersData.json"),
-            `[{"key":"${key}", "userData":${userData}}]`
+            `[{"key":"${key}", "userData":${userData}} ]`
           );
         }
       } else {
@@ -108,39 +96,49 @@ module.exports = class UserTime {
             // NEXT USER
 
             const elementID =
-              (await el.userData.useriD) !== this.user.id &&
-              this.name !== el.userData.name;
+              el.userData.useriD === this.user.id &&
+              this.name === el.userData.name;
 
-            if (elementID) {
+            if (
+              !jsonData.some((ele) => {
+                const check =
+                  ele.userData.useriD === this.user.id &&
+                  this.name === ele.userData.name;
+                console.log(check);
+                return check;
+              })
+            ) {
               console.log("inny user");
               key = this.keyGen();
               let userData = JSON.stringify(this.userObj, null, 4);
-              if (this.checkDir("usersData.json")) {
-                fs.appendFileSync(
-                  path.join(__dirname, "./files", "usersData.json"),
-                  `,{"key":"${key}", "userData":${userData}}`
-                );
-              }
-            }
+              console.log(userData);
 
-            console.log(
-              "UserTime -> time -> jsonUserJoinedData",
-              jsonUserJoinedData
-            );
+              if (this.checkDir("usersData.json")) {
+                replace({
+                  regex: `}} `,
+                  replacement: `}}, {"key":"${key}", "userData":${userData}} `,
+                  paths: [path.join(__dirname, "./files", "usersData.json")],
+                  recursive: true,
+                  silent: true,
+                });
+              }
+            } else {
+              console.log("user exist");
+            }
 
             if (
               this.name === el.userData.name &&
               el.userData.useriD === this.user.id
             ) {
-              console.log("name");
-              const options = {
-                files: path.join(__dirname, "./files", "usersData.json"),
-                from: `"userJoind": ${
+              replace({
+                regex: `"userJoind": ${
                   jsonUserJoinedData ? jsonUserJoinedData : null
                 },`,
-                to: `"userJoind": ${this.userObj.userJoind},`,
-              };
-              this.replaceFunc(options);
+                replacement: `"userJoind": ${this.userObj.userJoind},`,
+                paths: [path.join(__dirname, "./files", "usersData.json")],
+                recursive: true,
+                silent: true,
+              });
             }
           }
 
@@ -153,33 +151,33 @@ module.exports = class UserTime {
               this.name === el.userData.name &&
               el.userData.useriD === this.user.id
             ) {
-              const options = {
-                files: path.join(__dirname, "./files", "usersData.json"),
-                from: `"userLeft": ${
+              replace({
+                regex: `"userLeft": ${
                   jsonUserLeftData ? jsonUserLeftData : null
                 },`,
-                to: `"userLeft": ${this.userObj.userLeft},`,
-              };
+                replacement: `"userLeft": ${this.userObj.userLeft},`,
+                paths: [path.join(__dirname, "./files", "usersData.json")],
+                recursive: true,
+                silent: true,
+              });
 
-              console.log(options);
-              this.replaceFunc(options);
-            }
+              const diff = this.updateDiff(
+                el.userData.userJoind,
+                this.userObj.userLeft,
+                jsonUserDiffData
+              );
 
-            const diff = this.updateDiff(
-              el.userData.userJoind,
-              this.userObj.userLeft,
-              jsonUserDiffData
-            );
-
-            if (diff) {
-              const options = {
-                files: path.join(__dirname, "./files", "usersData.json"),
-                from: `"userTimeDiff": ${
-                  jsonUserDiffData ? jsonUserDiffData : null
-                }`,
-                to: `"userTimeDiff": ${await diff}`,
-              };
-              this.replaceFunc(options);
+              if (diff) {
+                replace({
+                  regex: `"userTimeDiff": ${
+                    jsonUserDiffData ? jsonUserDiffData : null
+                  }`,
+                  replacement: `"userTimeDiff": ${await diff}`,
+                  paths: [path.join(__dirname, "./files", "usersData.json")],
+                  recursive: true,
+                  silent: true,
+                });
+              }
             }
           }
         });

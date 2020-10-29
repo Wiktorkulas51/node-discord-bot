@@ -12,7 +12,11 @@ function regulationsAccept(client) {
         .setTitle(`use reaction ${reactionEmoji}`)
         .setDescription(
           `
-     asd
+          Żeby otrzymać dostęp do kanału zostaw reakcję poniżej:🆗
+          Jeśli chcecie uprawnienia do DJ'a, wybierzcie reakcje poniżej :musical_keyboard:🎹
+          Jeśli chcecie otrzymywać powiadomienia odnośnie darmowych gier oraz promocji, wybierzcie reakcje poniżej:🧅
+          jęśli chcecie uprawnienia do kanału NSFW: 🔥
+
           
         `
         )
@@ -21,8 +25,9 @@ function regulationsAccept(client) {
 
       msg.channel.send(MsgEmb).then((msg) => {
         msg.react(reactionEmoji);
-        msg.react("🔥");
         msg.react("🎹");
+        msg.react("🧅");
+        msg.react("🔥");
         client.on("messageReactionAdd", (reactions, user) => {
           const { name } = reactions.emoji;
           const member = reactions.message.guild.members.cache.get(user.id);
@@ -35,6 +40,8 @@ function regulationsAccept(client) {
               member.roles.add("767315838662737960");
               break;
             case "🎹":
+              member.roles.add("767316060365258753");
+            case "🧅":
               member.roles.add("767316060365258753");
             default:
               break;
@@ -53,6 +60,8 @@ function regulationsAccept(client) {
               break;
             case "🎹":
               mebmer.roles.remove("767316060365258753");
+            case "🧅":
+              member.roles.remove("767316060365258753");
             default:
               break;
           }
@@ -65,34 +74,6 @@ function regulationsAccept(client) {
 function fetchUser(msg, id) {
   const user = msg.guild.members.fetch(id);
   return user;
-}
-
-function getTimeByData(data, msg) {
-  const time = data.joinedTimestamp;
-  const msgCreAt = msg.createdAt;
-  const diff = new Date(msgCreAt).getTime() - time;
-  console.log("dif", new Date(diff));
-  const timeInHours = new Date(diff).getHours();
-  const timeInDays = new Date(diff).getDay();
-  //time sie nie sprawdza
-  return `${timeInDays} days and ${timeInHours} hours`;
-}
-
-function checkTime(msg) {
-  const id = msg.author.id;
-  fetchUser(msg, id).then((data) => {
-    const msgEmbOnTime = new MessageEmbed()
-      .setTitle(`Your time`)
-      .setDescription(
-        `
-      User: ${msg.author.tag}
-      Time from joined: ${getTimeByData(data, msg)}
-        `
-      )
-      .setColor(0xdd9323);
-
-    msg.channel.send(msgEmbOnTime);
-  });
 }
 
 function isEmpty(obj) {
@@ -126,6 +107,8 @@ const format = ({ sec, min, hours, days, months, years }) => {
     pluralize("hour", hours % 24),
     pluralize("minute", min % 60),
     pluralize("second", sec % 60),
+
+    console.log(),
   ]
     .filter(Boolean)
     .join(", ");
@@ -136,7 +119,7 @@ function timeCounter(val) {
 
   let secDiff = Math.abs(diff) / 1000;
   let minDiff = secDiff / 60;
-  const hoursDiff = minDiff / 24;
+  const hoursDiff = minDiff / 60;
   const daysDiff = hoursDiff / 31;
   const monthsDiff = daysDiff / 12;
   const yearsDiff = monthsDiff / 365;
@@ -149,6 +132,33 @@ function timeCounter(val) {
     months: Math.floor(monthsDiff),
     years: Math.floor(yearsDiff),
   };
+}
+
+function getTimeByData(data, msg) {
+  const timeWhenUserJoined = data.joinedTimestamp;
+  const msgCreatedAt = msg.createdAt;
+  const diff = new Date(msgCreatedAt).getTime() - timeWhenUserJoined;
+  const time = timeCounter(diff);
+  return format(time);
+}
+
+function checkTime(msg, timeData) {
+  const id = msg.author.id;
+  fetchUser(msg, id).then((data) => {
+    const msgEmbOnTime = new MessageEmbed()
+      .setTitle(`Czas spędzony na kanale`)
+      .setDescription(
+        `
+      Użytkownik:  ${msg.author.tag}
+      Czas od liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
+      Czas spędzony na kanałach głosowych:  ${timeData}
+
+        `
+      )
+      .setColor(0xdd9323);
+
+    msg.channel.send(msgEmbOnTime);
+  });
 }
 
 module.exports = {
