@@ -4,6 +4,8 @@ const randkey = require("random-keygen");
 const utiles = require("./utiles");
 
 const replace = require("replace");
+const { PRIORITY_BELOW_NORMAL } = require("constants");
+const { count } = require("console");
 
 module.exports = class UserTime {
   constructor(oldMember, newMember) {
@@ -93,21 +95,36 @@ module.exports = class UserTime {
           if (this.newMember.channelID) {
             this.userObj.userJoind = new Date().getTime();
 
-            // NEXT USER
+            const arr = [];
+            let counter = 0;
+            // // NEXT USER
+            for (let key of jsonData) {
+              let check =
+                key.userData.useriD === this.user.id &&
+                this.name === key.userData.name;
+              arr.push(await check);
+            }
 
-            const elementID =
-              el.userData.useriD === this.user.id &&
-              this.name === el.userData.name;
+            const everyFalse = arr.every(
+              (currentValue) => currentValue === false
+            );
+            const specCase = arr.filter((val) => val === true);
 
-            if (
-              !jsonData.some((ele) => {
-                const check =
-                  ele.userData.useriD === this.user.id &&
-                  this.name === ele.userData.name;
-                console.log(check);
-                return check;
-              })
-            ) {
+            console.log("spe", specCase);
+
+            if (specCase[0] === true) {
+              console.log("user exist");
+              return;
+            } else if (everyFalse || jsonData.length === 1) {
+              console.log("f", counter);
+              if (counter === 1) {
+                console.log("s", counter);
+                return;
+              }
+              counter++;
+              console.log("l", counter);
+              console.log("every", everyFalse, "spec", specCase);
+
               console.log("inny user");
               key = this.keyGen();
               let userData = JSON.stringify(this.userObj, null, 4);
@@ -122,8 +139,6 @@ module.exports = class UserTime {
                   silent: true,
                 });
               }
-            } else {
-              console.log("user exist");
             }
 
             if (

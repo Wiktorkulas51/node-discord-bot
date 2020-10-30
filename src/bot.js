@@ -37,7 +37,7 @@ client.on("message", async (msg) => {
     // }
     if (CMD_NAME === "summon") {
       msg.reply(`zamknij leb, już wbijam ${msg.author.username}`);
-      msg.member.voice.channel.join();
+      // msg.member.voice.channel.join();
     }
 
     if (CMD_NAME === "time") {
