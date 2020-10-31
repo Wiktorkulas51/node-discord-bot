@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const randkey = require("random-keygen");
 const utiles = require("./utiles");
-
 const replace = require("replace");
 
 module.exports = class UserTime {
@@ -24,25 +23,9 @@ module.exports = class UserTime {
     };
   }
 
-  async updateDiff(joind, left, diffTime) {
-    if (diffTime === null) {
-      const diff = joind - (await left);
-      return Math.abs(diff);
-    } else {
-      const diff = joind - left;
-      console.log("UserTime -> updateDiff -> left", left);
-      console.log("UserTime -> updateDiff -> joind", joind);
-      console.log("diff", diff);
-
-      const addedDiffTime = Math.abs(diff) + diffTime;
-      console.log("UserTime -> updateDiff -> addedDiffTime", addedDiffTime);
-      return addedDiffTime;
-    }
-  }
-
   async findUser(file, arr = []) {
     for (let key of file) {
-      let check =
+      const check =
         key.userData.useriD === this.user.id && this.name === key.userData.name;
       arr.push(await check);
     }
@@ -55,6 +38,17 @@ module.exports = class UserTime {
     });
 
     return { arr: arr, specCase: specCase, index: index };
+  }
+
+  async updateDiff(joind, left, diffTime) {
+    if (diffTime === null) {
+      const diff = joind - (await left);
+      return Math.abs(diff);
+    } else {
+      const diff = joind - left;
+      const addedDiffTime = Math.abs(diff) + diffTime;
+      return addedDiffTime;
+    }
   }
 
   keyGen() {
@@ -163,23 +157,15 @@ module.exports = class UserTime {
 
         if (this.oldMember.channelID) {
           this.userObj.userLeft = new Date().getTime();
-          const dataObj = this.findUser(jsonData);
-          // const specCase = (await dataObj).specCase;
 
-          console.log((await dataObj).arr);
+          const dataObj = await this.findUser(jsonData);
 
           const jsonUserLeftData =
             jsonData[(await dataObj).index].userData.userLeft;
-          console.log("UserTime -> time -> jsonUserLeftData", jsonUserLeftData);
           const jsonUserDiffData =
             jsonData[(await dataObj).index].userData.userTimeDiff;
-          console.log("UserTime -> time -> jsonUserDiffData", jsonUserDiffData);
           const jsonUserJoinedData = await jsonData[(await dataObj).index]
             .userData.userJoind;
-          console.log(
-            "UserTime -> time -> jsonUserJoinedData",
-            jsonUserJoinedData
-          );
 
           if (jsonData[(await dataObj).index].userData) {
             replace({

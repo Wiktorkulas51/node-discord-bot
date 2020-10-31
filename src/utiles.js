@@ -13,8 +13,11 @@ function regulationsAccept(client) {
         .setDescription(
           `
           Żeby otrzymać dostęp do kanału zostaw reakcję poniżej:🆗
+          
           Jeśli chcecie uprawnienia do DJ'a, wybierzcie reakcje poniżej :musical_keyboard:🎹
+          
           Jeśli chcecie otrzymywać powiadomienia odnośnie darmowych gier oraz promocji, wybierzcie reakcje poniżej:🧅
+
           jęśli chcecie uprawnienia do kanału NSFW: 🔥
 
           
@@ -34,15 +37,16 @@ function regulationsAccept(client) {
           if (user.username === "nodeBot-test") return;
           switch (name) {
             case reactionEmoji:
-              member.roles.add("766979782528598016");
+              member.roles.add("772170235100135455");
               break;
             case "🔥":
-              member.roles.add("767315838662737960");
+              member.roles.add("772170250166206535");
               break;
             case "🎹":
-              member.roles.add("767316060365258753");
+              member.roles.add("772170236765929553");
+              break;
             case "🧅":
-              member.roles.add("767316060365258753");
+              member.roles.add("772170248329101312");
             default:
               break;
           }
@@ -52,16 +56,16 @@ function regulationsAccept(client) {
           const mebmer = reactions.message.guild.members.cache.get(user.id);
           switch (name) {
             case reactionEmoji:
-              mebmer.roles.remove("766979782528598016");
-
+              mebmer.roles.remove("772170235100135455");
               break;
             case "🔥":
-              mebmer.roles.remove("767315838662737960");
+              mebmer.roles.remove("772170250166206535");
               break;
             case "🎹":
-              mebmer.roles.remove("767316060365258753");
+              mebmer.roles.remove("772170236765929553");
+              break;
             case "🧅":
-              member.roles.remove("767316060365258753");
+              mebmer.roles.remove("772170248329101312");
             default:
               break;
           }
@@ -142,13 +146,13 @@ function getTimeByData(data, msg) {
   return format(time);
 }
 
-function checkTime(msg, timeData) {
+function checkTime(msg, timeData, name) {
   const id = msg.author.id;
   fetchUser(msg, id).then((data) => {
     const msgEmbOnTime = new MessageEmbed()
       .setTitle(`Czas spędzony na kanale`)
 
-      .setAuthor(`Użytkownik:  ${msg.author.tag}`)
+      .setAuthor(`Użytkownik: ${name}`)
 
       .setDescription(
         `
@@ -158,10 +162,38 @@ function checkTime(msg, timeData) {
 
         `
       )
-      .setColor("RANDOM");
+      .setColor("#e6357c");
 
     msg.channel.send(msgEmbOnTime);
   });
+}
+async function findUser(file, msg, arr = []) {
+  for (let key of file) {
+    const check =
+      msg.author.username === key.userData.name &&
+      msg.author.id === key.userData.useriD;
+    arr.push(await check);
+  }
+
+  let index;
+  const specCase = arr.filter((val) => {
+    const i = arr.findIndex((val) => val === true);
+    index = i;
+    return val === true;
+  });
+
+  return { arr: arr, specCase: specCase, index: index };
+}
+
+function addRoleByTime(time, id, msg) {
+  const member = msg.guild.members.cache.get(id);
+  console.log(time);
+  if (time >= 3600000) {
+    member.roles.add("772186320650108948");
+    msg.reply(`otrzymałeś właśnie nową rangę :)`);
+  } else {
+    msg.reply("nie odpowiednia ilość czasu");
+  }
 }
 
 module.exports = {
@@ -172,4 +204,6 @@ module.exports = {
   timeCounter,
   readingFileSync,
   isEmpty,
+  findUser,
+  addRoleByTime,
 };
