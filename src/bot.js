@@ -49,30 +49,43 @@ client.on("message", async (msg) => {
           msg.delete();
           msg.reply("plik jest pusty, upewnij się, że dołączyłeś na kanał");
         }
-        jsonData.forEach(async (el) => {
-          if (
-            msg.author.username === el.userData.name &&
-            msg.author.id === el.userData.useriD
-          ) {
-            const diff = el.userData.userTimeDiff;
-            const time = utiles.timeCounter(diff);
-            await utiles.format(time);
+        const arr = [];
+        for (let key of jsonData) {
+          let check =
+            msg.author.username === key.userData.name &&
+            msg.author.id === key.userData.useriD;
 
-            msg.delete();
+          arr.push(await check);
+        }
 
-            utiles.checkTime(
-              msg,
-              time.sec === 0 && time.min === 0
-                ? "nie byłes jeszcze na żadnym kanale"
-                : utiles.format(time)
-            );
-          } else if (
-            msg.author.username !== el.userData.name &&
-            msg.author.id !== el.userData.useriD
-          ) {
-            msg.reply("nie dołączyłeś jeszcze, na żaden kanał");
-          }
+        let index;
+        const specCase = arr.filter((val) => {
+          const i = arr.findIndex((val) => val === true);
+          index = i;
+          return val;
         });
+
+        const everyFalse = arr.every((currentValue) => currentValue === false);
+
+        if (specCase[0] === true) {
+          const diff = jsonData[index].userData.userTimeDiff;
+          console.log("diff", diff);
+
+          const time = utiles.timeCounter(diff);
+          utiles.format(time);
+
+          msg.delete();
+
+          utiles.checkTime(
+            msg,
+            time.sec === 0 && time.min === 0
+              ? "nie byłes jeszcze na żadnym kanale"
+              : utiles.format(time)
+          );
+        } else if (everyFalse) {
+          msg.delete();
+          msg.reply("nie dołączyłeś jeszcze na żaden kanał");
+        }
       } catch (error) {
         console.log(error);
       }

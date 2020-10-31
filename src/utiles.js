@@ -135,7 +135,7 @@ function timeCounter(val) {
 }
 
 function getTimeByData(data, msg) {
-  const timeWhenUserJoined = data.joinedTimestamp;
+  const timeWhenUserJoined = data.joinedAt;
   const msgCreatedAt = msg.createdAt;
   const diff = new Date(msgCreatedAt).getTime() - timeWhenUserJoined;
   const time = timeCounter(diff);
@@ -147,15 +147,18 @@ function checkTime(msg, timeData) {
   fetchUser(msg, id).then((data) => {
     const msgEmbOnTime = new MessageEmbed()
       .setTitle(`Czas spędzony na kanale`)
+
+      .setAuthor(`Użytkownik:  ${msg.author.tag}`)
+
       .setDescription(
         `
-      Użytkownik:  ${msg.author.tag}
-      Czas od liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
+      Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
+
       Czas spędzony na kanałach głosowych:  ${timeData}
 
         `
       )
-      .setColor(0xdd9323);
+      .setColor("RANDOM");
 
     msg.channel.send(msgEmbOnTime);
   });

@@ -4,8 +4,6 @@ const randkey = require("random-keygen");
 const utiles = require("./utiles");
 
 const replace = require("replace");
-const { PRIORITY_BELOW_NORMAL } = require("constants");
-const { count } = require("console");
 
 module.exports = class UserTime {
   constructor(oldMember, newMember) {
@@ -26,19 +24,37 @@ module.exports = class UserTime {
     };
   }
 
-  checkUser(file) {
-    console.log(file);
-  }
-
   async updateDiff(joind, left, diffTime) {
     if (diffTime === null) {
       const diff = joind - (await left);
       return Math.abs(diff);
     } else {
       const diff = joind - left;
+      console.log("UserTime -> updateDiff -> left", left);
+      console.log("UserTime -> updateDiff -> joind", joind);
+      console.log("diff", diff);
+
       const addedDiffTime = Math.abs(diff) + diffTime;
+      console.log("UserTime -> updateDiff -> addedDiffTime", addedDiffTime);
       return addedDiffTime;
     }
+  }
+
+  async findUser(file, arr = []) {
+    for (let key of file) {
+      let check =
+        key.userData.useriD === this.user.id && this.name === key.userData.name;
+      arr.push(await check);
+    }
+
+    let index;
+    const specCase = arr.filter((val) => {
+      const i = arr.findIndex((val) => val === true);
+      index = i;
+      return val === true;
+    });
+
+    return { arr: arr, specCase: specCase, index: index };
   }
 
   keyGen() {
@@ -89,113 +105,112 @@ module.exports = class UserTime {
           );
         }
       } else {
-        jsonData.forEach(async (el) => {
-          const jsonUserJoinedData = el.userData.userJoind;
+        if (this.newMember.channelID) {
+          this.userObj.userJoind = new Date().getTime();
 
-          if (this.newMember.channelID) {
-            this.userObj.userJoind = new Date().getTime();
+          let counter = 0;
 
-            const arr = [];
-            let counter = 0;
-            // // NEXT USER
-            for (let key of jsonData) {
-              let check =
-                key.userData.useriD === this.user.id &&
-                this.name === key.userData.name;
-              arr.push(await check);
-            }
+          const dataObj = await this.findUser(jsonData);
 
-            const everyFalse = arr.every(
-              (currentValue) => currentValue === false
+          const everyFalse = dataObj.arr.every(
+            (currentValue) => currentValue === false
+          );
+          const specCase = dataObj.arr.filter((val) => val === true);
+          //zeby zobaczyc czy wiecej niz jeden index zwroci prawde jezeli tak to wtedy nie idz daje
+
+          if (specCase[0] === true) {
+            console.log("user exist");
+            const jsonUserJoinedData =
+              jsonData[dataObj.index].userData.userJoind;
+            console.log(
+              "UserTime -> time -> jsonUserJoinedData",
+              jsonUserJoinedData
             );
-            const specCase = arr.filter((val) => val === true);
 
-            console.log("spe", specCase);
+            replace({
+              regex: `"userJoind": ${
+                jsonUserJoinedData ? jsonUserJoinedData : null
+              },`,
+              replacement: `"userJoind": ${this.userObj.userJoind},`,
+              paths: [path.join(__dirname, "./files", "usersData.json")],
+              recursive: true,
+              silent: true,
+            });
 
-            if (specCase[0] === true) {
-              console.log("user exist");
+            return;
+          } else if (everyFalse || jsonData.length === 1) {
+            if (counter >= 1) {
               return;
-            } else if (everyFalse || jsonData.length === 1) {
-              console.log("f", counter);
-              if (counter === 1) {
-                console.log("s", counter);
-                return;
-              }
-              counter++;
-              console.log("l", counter);
-              console.log("every", everyFalse, "spec", specCase);
-
-              console.log("inny user");
-              key = this.keyGen();
-              let userData = JSON.stringify(this.userObj, null, 4);
-              console.log(userData);
-
-              if (this.checkDir("usersData.json")) {
-                replace({
-                  regex: `}} `,
-                  replacement: `}}, {"key":"${key}", "userData":${userData}} `,
-                  paths: [path.join(__dirname, "./files", "usersData.json")],
-                  recursive: true,
-                  silent: true,
-                });
-              }
             }
+            counter++;
 
-            if (
-              this.name === el.userData.name &&
-              el.userData.useriD === this.user.id
-            ) {
+            console.log("inny user");
+            key = this.keyGen();
+            let userData = JSON.stringify(this.userObj, null, 4);
+            console.log(userData);
+
+            if (this.checkDir("usersData.json")) {
               replace({
-                regex: `"userJoind": ${
-                  jsonUserJoinedData ? jsonUserJoinedData : null
-                },`,
-                replacement: `"userJoind": ${this.userObj.userJoind},`,
+                regex: `}} `,
+                replacement: `}}, {"key":"${key}", "userData":${userData}} `,
                 paths: [path.join(__dirname, "./files", "usersData.json")],
                 recursive: true,
                 silent: true,
               });
             }
           }
+        }
 
-          if (this.oldMember.channelID) {
-            this.userObj.userLeft = new Date().getTime();
-            const jsonUserLeftData = el.userData.userLeft;
-            const jsonUserDiffData = el.userData.userTimeDiff;
+        if (this.oldMember.channelID) {
+          this.userObj.userLeft = new Date().getTime();
+          const dataObj = this.findUser(jsonData);
+          // const specCase = (await dataObj).specCase;
 
-            if (
-              this.name === el.userData.name &&
-              el.userData.useriD === this.user.id
-            ) {
+          console.log((await dataObj).arr);
+
+          const jsonUserLeftData =
+            jsonData[(await dataObj).index].userData.userLeft;
+          console.log("UserTime -> time -> jsonUserLeftData", jsonUserLeftData);
+          const jsonUserDiffData =
+            jsonData[(await dataObj).index].userData.userTimeDiff;
+          console.log("UserTime -> time -> jsonUserDiffData", jsonUserDiffData);
+          const jsonUserJoinedData = await jsonData[(await dataObj).index]
+            .userData.userJoind;
+          console.log(
+            "UserTime -> time -> jsonUserJoinedData",
+            jsonUserJoinedData
+          );
+
+          if (jsonData[(await dataObj).index].userData) {
+            replace({
+              regex: `"userLeft": ${
+                jsonUserLeftData ? jsonUserLeftData : null
+              },`,
+              replacement: `"userLeft": ${this.userObj.userLeft},`,
+              paths: [path.join(__dirname, "./files", "usersData.json")],
+              recursive: true,
+              silent: true,
+            });
+
+            const diff = this.updateDiff(
+              jsonUserJoinedData,
+              this.userObj.userLeft,
+              jsonUserDiffData
+            );
+
+            if (diff) {
               replace({
-                regex: `"userLeft": ${
-                  jsonUserLeftData ? jsonUserLeftData : null
-                },`,
-                replacement: `"userLeft": ${this.userObj.userLeft},`,
+                regex: `"userTimeDiff": ${
+                  jsonUserDiffData ? jsonUserDiffData : null
+                }`,
+                replacement: `"userTimeDiff": ${await diff}`,
                 paths: [path.join(__dirname, "./files", "usersData.json")],
                 recursive: true,
                 silent: true,
               });
-
-              const diff = this.updateDiff(
-                el.userData.userJoind,
-                this.userObj.userLeft,
-                jsonUserDiffData
-              );
-
-              if (diff) {
-                replace({
-                  regex: `"userTimeDiff": ${
-                    jsonUserDiffData ? jsonUserDiffData : null
-                  }`,
-                  replacement: `"userTimeDiff": ${await diff}`,
-                  paths: [path.join(__dirname, "./files", "usersData.json")],
-                  recursive: true,
-                  silent: true,
-                });
-              }
             }
           }
-        });
+        }
       }
     } catch (error) {
       console.log(error);
