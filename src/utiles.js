@@ -139,9 +139,15 @@ function timeCounter(val) {
 }
 
 function getTimeByData(data, msg) {
-  const timeWhenUserJoined = data.joinedAt;
+  const timeWhenUserJoined = data.joinedTimestamp;
   const msgCreatedAt = msg.createdAt;
   const diff = new Date(msgCreatedAt).getTime() - timeWhenUserJoined;
+  const time1 = timeWhenUserJoined;
+  const time2 = msgCreatedAt;
+  // const forFormat1 = timeCounter(time1);
+  // const forFormat2 = timeCounter(time2);
+  // console.log(forFormat1);
+  // console.log(forFormat2);
   const time = timeCounter(diff);
   return format(time);
 }
@@ -196,6 +202,28 @@ function addRoleByTime(time, id, msg) {
   }
 }
 
+function play(guild, song, queue, ytdl) {
+  let serverQueue = queue.get(guild.id);
+
+  if (!song) {
+    serverQueue.voiceChannel.leave();
+    queue.delete(guild.id);
+    return;
+  }
+
+  const dispatcher = serverQueue.connection
+    .play(ytdl(song.url))
+    .on("end", () => {
+      serverQueue.songs.shift();
+      play(guild, serverQueue.songs[0], queue, ytdl);
+    })
+    .on("error", () => {
+      console.log(error);
+    });
+
+  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+}
+
 module.exports = {
   regulationsAccept,
   checkTime,
@@ -206,4 +234,5 @@ module.exports = {
   isEmpty,
   findUser,
   addRoleByTime,
+  play,
 };
