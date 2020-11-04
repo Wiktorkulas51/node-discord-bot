@@ -118,7 +118,6 @@ client.on("message", async (msg) => {
           if (args.length === 0) {
             msg.reply("musisz podać link");
           }
-
           const serverQueue = queue.get(msg.guild.id);
           const voiceConnection = msg.member.voice;
 
@@ -140,8 +139,9 @@ client.on("message", async (msg) => {
           // )
           //   return msg.channel.send("I do not have permission!");
           const songinfo = await ytdl.getInfo(args[0]);
+
           const song = {
-            title: songinfo.title,
+            title: songinfo.videoDetails.title,
             url: songinfo.videoDetails.video_url,
           };
 
@@ -158,18 +158,13 @@ client.on("message", async (msg) => {
             queue.set(msg.guild.id, queueConst);
             queueConst.songs.push(song);
 
-            // if (voiceConnection) {
-            //   console.log("true");
-            //   console.log("asd", msg.member.voice.channel.join());
-            //   const connection = await msg.member.voice.channel.join();
-
-            //   console.log("func", utiles.play(connection, msg, servers, ytdl));
-            //   utiles.play(connection, msg, servers, ytdl);
-            // }
-
             try {
+              // const connection =
+
               const connection = await voiceConnection.channel.join();
               queueConst.connection = connection;
+              console.log(queueConst.connection);
+
               play(msg.guild, queueConst.songs[0], queue, ytdl);
             } catch (error) {
               console.log(error);
