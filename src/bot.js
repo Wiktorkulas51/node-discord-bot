@@ -121,16 +121,16 @@ client.on("message", async (msg) => {
           const serverQueue = queue.get(msg.guild.id);
           const voiceConnection = msg.member.voice;
 
-          if (!voiceConnection)
+          if (!voiceConnection.channel)
             return msg.channel.send("musisz wejść na kanał głosowy");
 
-          // if (!servers[msg.guild.id])
-          //   servers[msg.guild.id] = {
-          //     queue: [],
-          //   };
-          // let serv = servers[msg.guild.id];
+          if (!servers[msg.guild.id])
+            servers[msg.guild.id] = {
+              queue: [],
+            };
+          const serv = servers[msg.guild.id];
 
-          // serv.queue.push(args[0]);
+          serv.queue.push(args[0]);
           // if (
           //   !voiceConnection.channel
           //     .permissionsFor(client.user)
@@ -144,41 +144,45 @@ client.on("message", async (msg) => {
             title: songinfo.videoDetails.title,
             url: songinfo.videoDetails.video_url,
           };
-
-          if (!serverQueue) {
-            const queueConst = {
-              textChannel: msg.channel,
-              voiceChannel: voiceConnection.channel,
-              connection: null,
-              songs: [],
-              volume: 5,
-              playing: true,
-            };
-
-            queue.set(msg.guild.id, queueConst);
-            queueConst.songs.push(song);
-
-            try {
-              // const connection =
-
-              const connection = await voiceConnection.channel.join();
-              queueConst.connection = connection;
-              console.log(queueConst.connection);
-
-              play(msg.guild, queueConst.songs[0], queue, ytdl);
-            } catch (error) {
-              console.log(error);
-              queue.delete(msg.guild.id);
-              return msg.channel.send(
-                `There was an error playing the song! Error: ${error}`
-              );
-            }
-          } else {
-            serverQueue.songs.push(song);
-            return msg.channel.send(
-              `${song.title} has been added to the queue!`
-            );
+          if (voiceConnection.channel) {
+            const connection = await voiceConnection.channel.join();
+            utiles.play(connection, msg, ytdl, servers);
+            if (connection) utiles.play(connection, msg, ytdl, servers);
           }
+
+          // if (!serverQueue) {
+          //   const queueConst = {
+          //     textChannel: msg.channel,
+          //     voiceChannel: voiceConnection.channel,
+          //     connection: null,
+          //     songs: [],
+          //     volume: 5,
+          //     playing: true,
+          //   };
+
+          //   queue.set(msg.guild.id, queueConst);
+          //   console.log("q", serverQueue);
+          //   queueConst.songs.push(song);
+
+          //   try {
+
+          //     const connection = await voiceConnection.channel.join();
+          //     queueConst.connection = connection;
+          //     play(msg.guild, queueConst.songs[0], queue, ytdl);
+          //   } catch (error) {
+          //     console.log(error);
+          //     queue.delete(msg.guild.id);
+          //     return msg.channel.send(
+          //       `There was an error playing the song! Error: ${error}`
+          //     );
+          //   }
+          // } else {
+          //   console.log("else");
+          //   serverQueue.songs.push(song);
+          //   return msg.channel.send(
+          //     `${song.title} has been added to the queue!`
+          //   );
+          // }
 
           break;
         case "upgrade":

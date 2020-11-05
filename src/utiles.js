@@ -202,26 +202,47 @@ function addRoleByTime(time, id, msg) {
   }
 }
 
-function play(guild, song, queue, ytdl) {
-  let serverQueue = queue.get(guild.id);
+// function play(guild, song, queue, ytdl) {
+//   let serverQueue = queue.get(guild.id);
+//   console.log("serQ", serverQueue);
+//   console.log("leng", serverQueue.songs);
 
-  if (!song) {
-    serverQueue.voiceChannel.leave();
-    queue.delete(guild.id);
-    return;
-  }
+//   if (!song) {
+//     console.log("!song");
+//     serverQueue.voiceChannel.leave();
+//     queue.delete(guild.id);
+//     return;
+//   }
 
-  const dispatcher = serverQueue.connection
-    .play(ytdl(song.url))
-    .on("end", () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0], queue, ytdl);
+//   const dispatcher = serverQueue.connection
+//     .play(ytdl(song.url))
+//     .on("finish", () => {
+//       serverQueue.songs.shift();
+//       serverQueue.songs[0]
+//         ? play(guild, serverQueue.songs[0], queue, ytdl)
+//         : serverQueue.connection.disconnect();
+//     })
+//     .on("error", () => {
+//       console.log(error);
+//     });
+
+//   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+// }
+
+function play(connection, msg, ytdl, servers) {
+  const server = servers[msg.guild.id];
+
+  connection
+    .play(ytdl(server.queue[0]))
+    .on("finish", () => {
+      server.queue.shift();
+      server.queue[0]
+        ? play(connection, msg, ytdl, servers)
+        : connection.disconnect();
     })
     .on("error", () => {
       console.log(error);
     });
-
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
 
 module.exports = {
