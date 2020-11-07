@@ -88,7 +88,7 @@ module.exports = class UserTime {
 
       const jsonData = await utiles.readingFileSync("usersData.json");
       this.userObj.userJoind = new Date().getTime();
-
+      //bugs
       if (utiles.isEmpty(jsonData)) {
         console.log("empty");
         let userData = JSON.stringify(this.userObj, null, 4);
@@ -130,28 +130,28 @@ module.exports = class UserTime {
               recursive: true,
               silent: true,
             });
-
-            return;
           } else if (everyFalse || jsonData.length === 1) {
-            if (counter >= 1) {
+            console.log("false", everyFalse);
+            //bugs
+
+            if (specCase[0] === true) {
+              console.log("exist 2");
               return;
             }
-            counter++;
 
             console.log("inny user");
             key = this.keyGen();
             let userData = JSON.stringify(this.userObj, null, 4);
             console.log(userData);
 
-            if (this.checkDir("usersData.json")) {
-              replace({
-                regex: `}} `,
-                replacement: `}}, {"key":"${key}", "userData":${userData}} `,
-                paths: [path.join(__dirname, "./files", "usersData.json")],
-                recursive: true,
-                silent: true,
-              });
-            }
+            //bugs
+            replace({
+              regex: `}} `,
+              replacement: `}}, {"key":"${key}", "userData":${userData}} `,
+              paths: [path.join(__dirname, "./files", "usersData.json")],
+              recursive: true,
+              silent: true,
+            });
           }
         }
 

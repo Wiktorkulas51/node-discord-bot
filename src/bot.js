@@ -1,9 +1,8 @@
 require("dotenv").config();
-const { Client } = require("discord.js");
+const { Client, MessageEmbed } = require("discord.js");
 const utiles = require("./utiles");
 const UserTime = require("./UserTIme");
 const ytdl = require("ytdl-core");
-const { play } = require("./utiles");
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
@@ -114,11 +113,20 @@ client.on("message", async (msg) => {
           // msg.member.voice.channel.join();
           break;
         case "play":
-          const queue = new Map();
+          // const queue = new Map();
+
+          // const serverQueue = queue.get(msg.guild.id);
+          // if (
+          //   !voiceConnection.channel
+          //     .permissionsFor(client.user)
+          //     .has("CONNECT") ||
+          //   !voiceConnection.channel.permissionsFor(client.user).has("SPEAK")
+          // )
+          //   return msg.channel.send("I do not have permission!");
           if (args.length === 0) {
             msg.reply("musisz podać link");
           }
-          const serverQueue = queue.get(msg.guild.id);
+
           const voiceConnection = msg.member.voice;
 
           if (!voiceConnection.channel)
@@ -131,23 +139,37 @@ client.on("message", async (msg) => {
           const serv = servers[msg.guild.id];
 
           serv.queue.push(args[0]);
-          // if (
-          //   !voiceConnection.channel
-          //     .permissionsFor(client.user)
-          //     .has("CONNECT") ||
-          //   !voiceConnection.channel.permissionsFor(client.user).has("SPEAK")
-          // )
-          //   return msg.channel.send("I do not have permission!");
+
           const songinfo = await ytdl.getInfo(args[0]);
 
           const song = {
             title: songinfo.videoDetails.title,
             url: songinfo.videoDetails.video_url,
           };
+          //on comm show every song in que
+
+          //bug
+          if (serv.queue.length === 1) {
+            const msgEmb = new MessageEmbed()
+              .setColor("e6357c")
+              .setTitle("Muzyka 🎵🎵🎵")
+              .setAuthor(`Author wiadomości: ${msg.author.username}`)
+              .setURL(args[0])
+              .setDescription(`Aktualnie gra: ${song.title}`);
+            msg.channel.send(msgEmb);
+          } else if (serv.queue.length > 1) {
+            const msgEmb = new MessageEmbed()
+              .setColor("e6357c")
+              .setTitle("Muzyka 🎵🎵🎵")
+              .setAuthor(`Author wiadomości: ${msg.author.username}`)
+              .setURL(args[0])
+              .setDescription(`Dodano do kolejki: ${song.title}`);
+            msg.channel.send(msgEmb);
+          }
+
           if (voiceConnection.channel) {
             const connection = await voiceConnection.channel.join();
             utiles.play(connection, msg, ytdl, servers);
-            if (connection) utiles.play(connection, msg, ytdl, servers);
           }
 
           // if (!serverQueue) {

@@ -231,11 +231,15 @@ function addRoleByTime(time, id, msg) {
 
 function play(connection, msg, ytdl, servers) {
   const server = servers[msg.guild.id];
+  const playe = connection.play(server.queue[0]);
 
-  connection
+  console.log("p", playe);
+  server.dispatcher = connection
     .play(ytdl(server.queue[0]))
     .on("finish", () => {
       server.queue.shift();
+
+      console.log("f");
       server.queue[0]
         ? play(connection, msg, ytdl, servers)
         : connection.disconnect();
