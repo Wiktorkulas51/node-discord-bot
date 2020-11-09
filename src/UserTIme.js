@@ -31,13 +31,14 @@ module.exports = class UserTime {
     }
 
     let index;
-    const specCase = arr.filter((val) => {
+
+    const filteredValue = arr.filter((val) => {
       const i = arr.findIndex((val) => val === true);
       index = i;
       return val === true;
     });
 
-    return { arr: arr, specCase: specCase, index: index };
+    return { arr: arr, filteredValue: filteredValue, index: index };
   }
 
   async updateDiff(joind, left, diffTime) {
@@ -86,10 +87,10 @@ module.exports = class UserTime {
     try {
       let key = this.keyGen();
 
-      const jsonData = await utiles.readingFileSync("usersData.json");
+      const jsonFileObj = await utiles.readingFileSync("usersData.json");
       this.userObj.userJoind = new Date().getTime();
       //bugs
-      if (utiles.isEmpty(jsonData)) {
+      if (utiles.isEmpty(jsonFileObj)) {
         console.log("empty");
         let userData = JSON.stringify(this.userObj, null, 4);
         if (this.checkDir("usersData.json")) {
@@ -102,24 +103,18 @@ module.exports = class UserTime {
         if (this.newMember.channelID) {
           this.userObj.userJoind = new Date().getTime();
 
-          let counter = 0;
+          const userDataObj = await this.findUser(jsonFileObj);
 
-          const dataObj = await this.findUser(jsonData);
-
-          const everyFalse = dataObj.arr.every(
+          const everyValFalse = userDataObj.arr.every(
             (currentValue) => currentValue === false
           );
-          const specCase = dataObj.arr.filter((val) => val === true);
+
           //zeby zobaczyc czy wiecej niz jeden index zwroci prawde jezeli tak to wtedy nie idz daje
 
-          if (specCase[0] === true) {
+          if (userDataObj.filteredValue) {
             console.log("user exist");
             const jsonUserJoinedData =
-              jsonData[dataObj.index].userData.userJoind;
-            console.log(
-              "UserTime -> time -> jsonUserJoinedData",
-              jsonUserJoinedData
-            );
+              jsonFileObj[userDataObj.index].userData.userJoind;
 
             replace({
               regex: `"userJoind": ${
@@ -130,11 +125,11 @@ module.exports = class UserTime {
               recursive: true,
               silent: true,
             });
-          } else if (everyFalse || jsonData.length === 1) {
-            console.log("false", everyFalse);
+          } else if (everyValFalse || jsonFileObj.length === 1) {
+            console.log("false", everyValFalse);
             //bugs
 
-            if (specCase[0] === true) {
+            if (userDataObj.filteredValue) {
               console.log("exist 2");
               return;
             }
@@ -144,7 +139,6 @@ module.exports = class UserTime {
             let userData = JSON.stringify(this.userObj, null, 4);
             console.log(userData);
 
-            //bugs
             replace({
               regex: `}} `,
               replacement: `}}, {"key":"${key}", "userData":${userData}} `,
@@ -157,21 +151,14 @@ module.exports = class UserTime {
 
         if (this.oldMember.channelID) {
           this.userObj.userLeft = new Date().getTime();
+          const userDataObj = await this.findUser(jsonFileObj);
+          const { userLeft } = jsonFileObj[userDataObj.index].userData;
+          const { userTimeDiff } = jsonFileObj[userDataObj.index].userData;
+          const { userJoind } = jsonFileObj[userDataObj.index].userData;
 
-          const dataObj = await this.findUser(jsonData);
-
-          const jsonUserLeftData =
-            jsonData[(await dataObj).index].userData.userLeft;
-          const jsonUserDiffData =
-            jsonData[(await dataObj).index].userData.userTimeDiff;
-          const jsonUserJoinedData = await jsonData[(await dataObj).index]
-            .userData.userJoind;
-
-          if (jsonData[(await dataObj).index].userData) {
+          if (jsonFileObj[userDataObj.index].userData) {
             replace({
-              regex: `"userLeft": ${
-                jsonUserLeftData ? jsonUserLeftData : null
-              },`,
+              regex: `"userLeft": ${userLeft ? userLeft : null},`,
               replacement: `"userLeft": ${this.userObj.userLeft},`,
               paths: [path.join(__dirname, "./files", "usersData.json")],
               recursive: true,
@@ -179,16 +166,14 @@ module.exports = class UserTime {
             });
 
             const diff = this.updateDiff(
-              jsonUserJoinedData,
+              userJoind,
               this.userObj.userLeft,
-              jsonUserDiffData
+              userTimeDiff
             );
 
             if (diff) {
               replace({
-                regex: `"userTimeDiff": ${
-                  jsonUserDiffData ? jsonUserDiffData : null
-                }`,
+                regex: `"userTimeDiff": ${userTimeDiff ? userTimeDiff : null}`,
                 replacement: `"userTimeDiff": ${await diff}`,
                 paths: [path.join(__dirname, "./files", "usersData.json")],
                 recursive: true,

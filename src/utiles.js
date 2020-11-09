@@ -105,12 +105,12 @@ const format = ({ sec, min, hours, days, months, years }) => {
   };
 
   return [
-    pluralize("year", years % 365),
-    pluralize("month", months % 12),
-    pluralize("day", days % 7),
-    pluralize("hour", hours % 24),
-    pluralize("minute", min % 60),
-    pluralize("second", sec % 60),
+    pluralize("Year", years % 365),
+    pluralize("Month", months % 12),
+    pluralize("Day", days % 7),
+    pluralize("Houur", hours % 24),
+    pluralize("Minute", min % 60),
+    pluralize("Secund", sec % 60),
 
     console.log(),
   ]
@@ -138,19 +138,17 @@ function timeCounter(val) {
   };
 }
 
-function getTimeByData(data, msg) {
-  const timeWhenUserJoined = data.joinedTimestamp;
-  const msgCreatedAt = msg.createdAt;
-  const diff = new Date(msgCreatedAt).getTime() - timeWhenUserJoined;
-  const time1 = timeWhenUserJoined;
-  const time2 = msgCreatedAt;
-  // const forFormat1 = timeCounter(time1);
-  // const forFormat2 = timeCounter(time2);
-  // console.log(forFormat1);
-  // console.log(forFormat2);
-  const time = timeCounter(diff);
-  return format(time);
-}
+// function getTimeByData(data, msg) {
+//   const timeWhenUserJoined = data.joinedTimestamp;
+//   const msgCreatedAt = msg.createdAt;
+//   console.log("getTimeByData -> msgCreatedAt", msgCreatedAt);
+//   const diff = timeWhenUserJoined - new Date(msgCreatedAt).getTime();
+
+//   const time1 = timeWhenUserJoined;
+//   const time2 = msgCreatedAt;
+//   const time = timeCounter(diff);
+//   return format(time);
+// }
 
 function checkTime(msg, timeData, name) {
   const id = msg.author.id;
@@ -160,10 +158,9 @@ function checkTime(msg, timeData, name) {
 
       .setAuthor(`Użytkownik: ${name}`)
 
+      // Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
       .setDescription(
         `
-      Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
-
       Czas spędzony na kanałach głosowych:  ${timeData}
 
         `
@@ -182,71 +179,59 @@ async function findUser(file, msg, arr = []) {
   }
 
   let index;
-  const specCase = arr.filter((val) => {
+  const filteredValue = arr.filter((val) => {
     const i = arr.findIndex((val) => val === true);
     index = i;
     return val === true;
   });
 
-  return { arr: arr, specCase: specCase, index: index };
+  return { arr: arr, filteredValue: filteredValue, index: index };
 }
 
 function addRoleByTime(time, id, msg) {
   const member = msg.guild.members.cache.get(id);
-  console.log(time);
-  if (time >= 3600000) {
-    member.roles.add("772186320650108948");
-    msg.reply(`otrzymałeś właśnie nową rangę :)`);
-  } else {
-    msg.reply("nie odpowiednia ilość czasu");
-  }
-}
+  let role;
 
-// function play(guild, song, queue, ytdl) {
-//   let serverQueue = queue.get(guild.id);
-//   console.log("serQ", serverQueue);
-//   console.log("leng", serverQueue.songs);
-
-//   if (!song) {
-//     console.log("!song");
-//     serverQueue.voiceChannel.leave();
-//     queue.delete(guild.id);
-//     return;
-//   }
-
-//   const dispatcher = serverQueue.connection
-//     .play(ytdl(song.url))
-//     .on("finish", () => {
-//       serverQueue.songs.shift();
-//       serverQueue.songs[0]
-//         ? play(guild, serverQueue.songs[0], queue, ytdl)
-//         : serverQueue.connection.disconnect();
-//     })
-//     .on("error", () => {
-//       console.log(error);
-//     });
-
-//   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-// }
-
-function play(connection, msg, ytdl, servers) {
-  const server = servers[msg.guild.id];
-  const playe = connection.play(server.queue[0]);
-
-  console.log("p", playe);
-  server.dispatcher = connection
-    .play(ytdl(server.queue[0]))
-    .on("finish", () => {
-      server.queue.shift();
-
-      console.log("f");
-      server.queue[0]
-        ? play(connection, msg, ytdl, servers)
-        : connection.disconnect();
-    })
-    .on("error", () => {
-      console.log(error);
+  const roles = async (role) => {
+    let userRole;
+    msg.guild.roles.cache.each((data) => {
+      if (role === data.id) {
+        const dataObj = {
+          id: data.id,
+          name: data.name,
+          color: data.color,
+        };
+        userRole = dataObj;
+      } else {
+        return "something went wrong";
+      }
     });
+
+    return userRole;
+  };
+
+  const embMsg = async (role, msg) => {
+    //bug
+    console.log("wokrs", await role);
+
+    return msg.channel.send({
+      embed: {
+        color: 0xdd9323,
+        author: { name: msg.author.username },
+        description: `otrzymałeś właśnie nową rage, nazwa rangi: ${await role.name} i color: ${await role.color} `,
+      },
+    });
+  };
+  if (time >= 3600000) {
+    // if (member.roles.get(role)) msg.reply("posiadasz już taką rolę");
+    role = "772186320650108948";
+    member.roles.add(role);
+    embMsg(roles(role), msg);
+  } else {
+    msg.reply(
+      `nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲`
+    );
+  }
 }
 
 module.exports = {
@@ -259,5 +244,4 @@ module.exports = {
   isEmpty,
   findUser,
   addRoleByTime,
-  play,
 };
