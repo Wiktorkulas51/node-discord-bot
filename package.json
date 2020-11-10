@@ -2,7 +2,7 @@
     "name": "node-discord-bot",
     "version": "1.0.0",
     "description": "",
-    "main": "bot.js",
+    "main": "./src/bot.js",
     "scripts": {
         "start": "node ./src/bot",
         "dev": "nodemon ./src/bot"

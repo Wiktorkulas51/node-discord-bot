@@ -151,24 +151,16 @@ function timeCounter(val) {
 // }
 
 function checkTime(msg, timeData, name) {
-  const id = msg.author.id;
-  fetchUser(msg, id).then((data) => {
-    const msgEmbOnTime = new MessageEmbed()
-      .setTitle(`Czas spędzony na kanale`)
-
-      .setAuthor(`Użytkownik: ${name}`)
-
-      // Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
-      .setDescription(
-        `
-      Czas spędzony na kanałach głosowych:  ${timeData}
-
-        `
-      )
-      .setColor("#e6357c");
-
-    msg.channel.send(msgEmbOnTime);
+  return msg.channel.send({
+    embed: {
+      color: 0xe6357c,
+      title: "Czas spędzony na kanale",
+      author: { name: name },
+      description: `Czas spędzony na kanałach głosowych:  ${timeData} `,
+    },
   });
+
+  //   // Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
 }
 async function findUser(file, msg, arr = []) {
   for (let key of file) {
@@ -195,32 +187,40 @@ function addRoleByTime(time, id, msg) {
   const roles = async (role) => {
     let userRole;
     msg.guild.roles.cache.each((data) => {
-      if (role === data.id) {
-        const dataObj = {
-          id: data.id,
-          name: data.name,
-          color: data.color,
-        };
-        userRole = dataObj;
+      if (!member._roles.find((value) => value === role)) {
+        role === data.id
+          ? (userRole = {
+              id: data.id,
+              name: data.name,
+              color: data.color,
+            })
+          : "soemthing went wrong";
       } else {
-        return "something went wrong";
+        return (userRole = undefined);
       }
     });
-
     return userRole;
   };
 
-  const embMsg = async (role, msg) => {
-    //bug
-    console.log("wokrs", await role);
-
-    return msg.channel.send({
-      embed: {
-        color: 0xdd9323,
-        author: { name: msg.author.username },
-        description: `otrzymałeś właśnie nową rage, nazwa rangi: ${await role.name} i color: ${await role.color} `,
-      },
-    });
+  const embMsg = async (roleData, msg) => {
+    const role = await roleData;
+    if (role === undefined) {
+      return msg.channel.send({
+        embed: {
+          color: 0xe6357c,
+          author: { name: msg.author.username },
+          description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanalę głosowym by dostać kolejną 🔥  `,
+        },
+      });
+    } else {
+      return msg.channel.send({
+        embed: {
+          color: 0xe6357c,
+          author: { name: msg.author.username },
+          description: `Otrzymałeś właśnie nową rage 🔥 , nazwa rangi: ${await role.name} oraz color danej rangi: ${await role.color} `,
+        },
+      });
+    }
   };
   if (time >= 3600000) {
     // if (member.roles.get(role)) msg.reply("posiadasz już taką rolę");
@@ -228,9 +228,14 @@ function addRoleByTime(time, id, msg) {
     member.roles.add(role);
     embMsg(roles(role), msg);
   } else {
-    msg.reply(
-      `nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲`
-    );
+    return msg.channel.send({
+      embed: {
+        color: 0xe6357c,
+        author: { name: msg.author.username },
+        description: `Nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲
+         Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $roles 🚀`,
+      },
+    });
   }
 }
 

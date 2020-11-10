@@ -126,6 +126,14 @@ client.on("message", async (msg) => {
           msg.reply("nawet o tym nie wspominaj");
           break;
 
+        //end this
+        case "roles":
+          msg.reply("asd");
+          break;
+        //make a guide
+        case "guide":
+          break;
+
         default:
           break;
       }
