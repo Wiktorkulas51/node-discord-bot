@@ -37,7 +37,8 @@ module.exports = class UserTime {
       index = i;
       return val === true;
     });
-
+    //bug
+    console.log(filteredValue);
     return { arr: arr, filteredValue: filteredValue, index: index };
   }
 
@@ -47,8 +48,7 @@ module.exports = class UserTime {
       return Math.abs(diff);
     } else {
       const diff = joind - left;
-      const addedDiffTime = Math.abs(diff) + diffTime;
-      return addedDiffTime;
+      return Math.abs(diff) + diffTime;
     }
   }
 
@@ -58,29 +58,6 @@ module.exports = class UserTime {
       numbers: true,
     });
     return key;
-  }
-
-  checkDir(dirName) {
-    const status = () => {
-      fs.accessSync(
-        path.join(
-          __dirname,
-          dirName === "usersData.json" ? "./files/usersData.json" : dirName
-        ),
-        fs.constants.F_OK
-      );
-    };
-    if (status) {
-      return "EEXIST";
-    } else {
-      fs.mkdirSync(
-        path.join(
-          __dirname,
-          dirName === "usersData.json" ? "./files/usersData.json" : dirName,
-          (err) => (err ? console.log(err) : "EEXIST")
-        )
-      );
-    }
   }
 
   async time() {
@@ -93,12 +70,10 @@ module.exports = class UserTime {
       if (utiles.isEmpty(jsonFileObj)) {
         console.log("empty");
         let userData = JSON.stringify(this.userObj, null, 4);
-        if (this.checkDir("usersData.json")) {
-          fs.appendFileSync(
-            path.join(__dirname, "./files", "usersData.json"),
-            `[{"key":"${key}", "userData":${userData}} ]`
-          );
-        }
+        fs.appendFileSync(
+          path.join(__dirname, "./files", "usersData.json"),
+          `[{"key":"${key}", "userData":${userData}} ]`
+        );
       } else {
         if (this.newMember.channelID) {
           this.userObj.userJoind = new Date().getTime();
@@ -109,9 +84,7 @@ module.exports = class UserTime {
             (currentValue) => currentValue === false
           );
 
-          //zeby zobaczyc czy wiecej niz jeden index zwroci prawde jezeli tak to wtedy nie idz daje
-
-          if (userDataObj.filteredValue) {
+          if (userDataObj.filteredValue[0] === true) {
             console.log("user exist");
             const jsonUserJoinedData =
               jsonFileObj[userDataObj.index].userData.userJoind;
@@ -126,13 +99,7 @@ module.exports = class UserTime {
               silent: true,
             });
           } else if (everyValFalse || jsonFileObj.length === 1) {
-            console.log("false", everyValFalse);
             //bugs
-
-            if (userDataObj.filteredValue) {
-              console.log("exist 2");
-              return;
-            }
 
             console.log("inny user");
             key = this.keyGen();

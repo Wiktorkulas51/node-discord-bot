@@ -1,28 +1,7 @@
-[{
-    "key": "0aj6hpANfz",
-    "userData": {
-        "name": "wiktortest51",
-        "useriD": "770385819457683457",
-        "userJoind": 1604940202304,
-        "userLeft": 1604940205682,
-        "userTimeDiff": 3378
-    }
-}, {
-    "key": "RyJmLkdnwr",
-    "userData": {
-        "name": "hiimwiktor",
-        "useriD": "278950668558139392",
-        "userJoind": 1605034985427,
-        "userLeft": 1605034986946,
-        "userTimeDiff": 4354354944
-    }
-}, {
-    "key": "XgMg38SvGW",
-    "userData": {
-        "name": "wiktorTestAcc",
-        "useriD": "769609319762100255",
-        "userJoind": 1604940215574,
-        "userLeft": 1604940220448,
-        "userTimeDiff": 4874
-    }
-}]
+[{"key":"XxKqlLCICt", "userData":{
+    "name": "wiktorTestAcc",
+    "useriD": "769609319762100255",
+    "userJoind": 1605122172025,
+    "userLeft": 1605122178767,
+    "userTimeDiff": 6742
+}} ]

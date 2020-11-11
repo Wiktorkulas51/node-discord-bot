@@ -1,6 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
+const { rolesAndTimeData } = require("./rolesAndTime");
 
 function regulationsAccept(client) {
   const reactionEmoji = "🆗";
@@ -19,8 +20,6 @@ function regulationsAccept(client) {
           Jeśli chcecie otrzymywać powiadomienia odnośnie darmowych gier oraz promocji, wybierzcie reakcje poniżej:🧅
 
           jęśli chcecie uprawnienia do kanału NSFW: 🔥
-
-          
         `
         )
         .setColor(0xdd9323)
@@ -89,10 +88,8 @@ function isEmpty(obj) {
 
 function readingFileSync(fileName) {
   const fileDate = fs.readFileSync(path.join(__dirname, "./files", fileName));
-  if (isEmpty(fileDate)) {
-    console.log(fileDate);
-    return null;
-  }
+  if (isEmpty(fileDate)) return null;
+
   return JSON.parse(fileDate);
 }
 
@@ -163,6 +160,7 @@ function checkTime(msg, timeData, name) {
   //   // Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
 }
 async function findUser(file, msg, arr = []) {
+  if (isEmpty(file)) return;
   for (let key of file) {
     const check =
       msg.author.username === key.userData.name &&
@@ -182,7 +180,8 @@ async function findUser(file, msg, arr = []) {
 
 function addRoleByTime(time, id, msg) {
   const member = msg.guild.members.cache.get(id);
-  let role;
+  const { timeObj, roleObj } = rolesAndTimeData();
+  const timeArr = [];
 
   const roles = async (role) => {
     let userRole;
@@ -207,14 +206,16 @@ function addRoleByTime(time, id, msg) {
     if (role === undefined) {
       return msg.channel.send({
         embed: {
+          title: "Ulepszone role",
           color: 0xe6357c,
           author: { name: msg.author.username },
-          description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanalę głosowym by dostać kolejną 🔥  `,
+          description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanale głosowym by dostać kolejną 🔥  `,
         },
       });
     } else {
       return msg.channel.send({
         embed: {
+          title: "Ulepszone role",
           color: 0xe6357c,
           author: { name: msg.author.username },
           description: `Otrzymałeś właśnie nową rage 🔥 , nazwa rangi: ${await role.name} oraz color danej rangi: ${await role.color} `,
@@ -222,21 +223,88 @@ function addRoleByTime(time, id, msg) {
       });
     }
   };
-  if (time >= 3600000) {
-    // if (member.roles.get(role)) msg.reply("posiadasz już taką rolę");
-    role = "772186320650108948";
-    member.roles.add(role);
-    embMsg(roles(role), msg);
-  } else {
+
+  const checkTimeAndGiveRole = async (
+    firstValue,
+    promiseSecondValue,
+    promiseRole,
+    msg
+  ) => {
+    const secondValue = await promiseSecondValue;
+    const role = await promiseRole.reverse();
+    let index;
+
+    const val = secondValue.some((val) => {
+      if (firstValue >= val) {
+        const i = secondValue
+          .slice()
+          .reverse()
+          .findIndex((val) => {
+            if (firstValue >= val) {
+              return (val = true);
+            }
+          });
+        index = i;
+
+        return (val = true);
+      }
+    });
+
+    if (val) {
+      embMsg(roles(roles), msg);
+      return member.roles.add(role[index]);
+    }
+
     return msg.channel.send({
       embed: {
         color: 0xe6357c,
         author: { name: msg.author.username },
         description: `Nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲
-         Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $roles 🚀`,
+         Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $need 🚀`,
       },
     });
-  }
+  };
+  const iterationOverTimeObj = async () => {
+    for (let key in timeObj) {
+      timeArr.push(await timeObj[key]);
+    }
+    return timeArr;
+  };
+
+  checkTimeAndGiveRole(time, iterationOverTimeObj(), roleObj, msg);
+}
+
+//end this func
+function timeUserNeedForNextRole(msg, userTimeDIff) {
+  const { timeObj, roleObj } = rolesAndTimeData();
+
+  const timeData = (msg, timeObj) => {
+    for (let key in timeObj) {
+      const objKey = timeObj[key];
+      const diff = userTimeDIff - objKey;
+      if (Math.sign(diff)) {
+        return timeCounter(diff);
+      }
+    }
+
+    const roleData = (msg, roleObj) => {
+      roleObj.forEach((el) => {
+        msg.guild.roles.fetch(el);
+      });
+    };
+
+    msg.delete();
+    return msg.channel.send({
+      embed: {
+        title: "Czas brakujący do danej Rangi",
+        color: 0xe6357c,
+        author: { name: msg.author.username },
+        description: `
+      tyle czasu ci brakuje: ${format(timeData())}  do rangi:
+          `,
+      },
+    });
+  };
 }
 
 module.exports = {
@@ -249,4 +317,6 @@ module.exports = {
   isEmpty,
   findUser,
   addRoleByTime,
+  rolesAndTimeData,
+  timeUserNeedForNextRole,
 };

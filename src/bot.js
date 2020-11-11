@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Client } = require("discord.js");
 const utiles = require("./utiles");
 const UserTime = require("./UserTIme");
+const { rolesAndTimeData } = require("./rolesAndTime");
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
@@ -66,6 +67,7 @@ client.on("message", async (msg) => {
           if (utiles.isEmpty(jsonFileObj)) {
             msg.delete();
             msg.reply("plik jest pusty, upewnij się, że dołączyłeś na kanał");
+            return;
           }
 
           const userDataObj = await utiles.findUser(jsonFileObj, msg);
@@ -74,8 +76,11 @@ client.on("message", async (msg) => {
             (currentValue) => currentValue === false
           );
 
-          if (userDataObj.filteredValue) {
+          if (userDataObj.filteredValue[0] === true) {
             const { userTimeDiff } = jsonFileObj[userDataObj.index].userData;
+            if (CMD_NAME === "time" && args[0] === "left") {
+              utiles.timeUserNeedForNextRole(msg, userTimeDiff);
+            }
 
             const time = utiles.timeCounter(userTimeDiff);
             utiles.format(time);
@@ -128,10 +133,43 @@ client.on("message", async (msg) => {
 
         //end this
         case "roles":
-          msg.reply("asd");
+          msg.delete();
+          msg.channel.send({
+            embed: {
+              title: "Role",
+              color: 0xe6357c,
+              author: { name: msg.author.username },
+              description: `
+Role jakie są dostępne 
+              `,
+            },
+          });
           break;
         //make a guide
         case "guide":
+          msg.delete();
+          msg.channel.send({
+            embed: {
+              title: "Komendy",
+              color: 0xe6357c,
+              author: { name: msg.author.username },
+              description: `
+            Wszystkie komendy zaczynają się od prefixa $, żeby komenda się wykonała musisz wpisać $ + słowo
+
+              $time, zwraca ilość 
+
+              $time all, komenda tylko dla Morysa oraz wiktora
+
+              $summon, summonujesz bota na kanał
+
+              $upgrade, po sędzonej określonej ilości czasu możesz wpisać tą komendę i dostać ciekawą rangę
+
+              $play, nic dodać nic ująć
+
+              $role jakie można dostac po określonej ilości czasu
+              `,
+            },
+          });
           break;
 
         default:
