@@ -1,6 +1,8 @@
+const { KeyObject } = require("crypto");
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
+const { async } = require("replace/bin/shared-options");
 const { rolesAndTimeData } = require("./rolesAndTime");
 
 function regulationsAccept(client) {
@@ -135,18 +137,6 @@ function timeCounter(val) {
   };
 }
 
-// function getTimeByData(data, msg) {
-//   const timeWhenUserJoined = data.joinedTimestamp;
-//   const msgCreatedAt = msg.createdAt;
-//   console.log("getTimeByData -> msgCreatedAt", msgCreatedAt);
-//   const diff = timeWhenUserJoined - new Date(msgCreatedAt).getTime();
-
-//   const time1 = timeWhenUserJoined;
-//   const time2 = msgCreatedAt;
-//   const time = timeCounter(diff);
-//   return format(time);
-// }
-
 function checkTime(msg, timeData, name) {
   return msg.channel.send({
     embed: {
@@ -156,9 +146,8 @@ function checkTime(msg, timeData, name) {
       description: `Czas spędzony na kanałach głosowych:  ${timeData} `,
     },
   });
-
-  //   // Czas liczony od dołączenia do kanału:  ${getTimeByData(data, msg)}
 }
+
 async function findUser(file, msg, arr = []) {
   if (isEmpty(file)) return;
   for (let key of file) {
@@ -180,8 +169,11 @@ async function findUser(file, msg, arr = []) {
 
 function addRoleByTime(time, id, msg) {
   const member = msg.guild.members.cache.get(id);
-  const { timeObj, roleObj } = rolesAndTimeData();
+  const { timeObj, roleArr } = rolesAndTimeData();
   const timeArr = [];
+
+  if (msg.member.roles.cache.has(roleArr[roleArr.length - 1]))
+    return msg.reply("Posiadasz już najwyższą role");
 
   const roles = async (role) => {
     let userRole;
@@ -271,40 +263,76 @@ function addRoleByTime(time, id, msg) {
     return timeArr;
   };
 
-  checkTimeAndGiveRole(time, iterationOverTimeObj(), roleObj, msg);
+  checkTimeAndGiveRole(time, iterationOverTimeObj(), roleArr, msg);
 }
 
 //end this func
 function timeUserNeedForNextRole(msg, userTimeDIff) {
-  const { timeObj, roleObj } = rolesAndTimeData();
+  const { timeObj, roleArr } = rolesAndTimeData();
 
-  const timeData = (msg, timeObj) => {
+  // bug
+  const merg = (timeObj, roleArr) => {
+    let finalObj;
+
+    for (let key in timeObj) {
+      const objKey = timeObj[key];
+      finalObj = {
+        name: key,
+        time: objKey,
+        ...roleArr,
+      };
+
+      console.log(finalObj);
+    }
+  };
+
+  merg(timeObj, roleArr);
+
+  if (msg.member.roles.cache.has(roleArr[roleArr.length - 1]))
+    return msg.reply("Posiadasz już najwyższą role");
+
+  const howMuchTimeUserNeed = (timeObj) => {
     for (let key in timeObj) {
       const objKey = timeObj[key];
       const diff = userTimeDIff - objKey;
-      if (Math.sign(diff)) {
+
+      if (Math.sign(diff) === -1) {
         return timeCounter(diff);
       }
     }
-
-    const roleData = (msg, roleObj) => {
-      roleObj.forEach((el) => {
-        msg.guild.roles.fetch(el);
-      });
-    };
-
-    msg.delete();
-    return msg.channel.send({
-      embed: {
-        title: "Czas brakujący do danej Rangi",
-        color: 0xe6357c,
-        author: { name: msg.author.username },
-        description: `
-      tyle czasu ci brakuje: ${format(timeData())}  do rangi:
-          `,
-      },
-    });
   };
+
+  // const roleInfo = (msg, roleArr) => {
+  //   roleArr.forEach(async (el) => {
+  //     const guildRoles = await msg.guild.roles
+  //       .fetch(el)
+  //       .then((el) => {
+  //         return {
+  //           name: el.name,
+  //           id: el.id,
+  //         };
+  //       })
+  //       .catch((err) => console.log(err));
+
+  //     console.log(guildRoles.name, guildRoles.id);
+  //   });
+  // };
+
+  // roleInfo(msg, roleArr);
+
+  msg.delete();
+
+  return msg.channel.send({
+    embed: {
+      title: "Czas brakujący do danej Rangi",
+      color: 0xe6357c,
+      author: { name: msg.author.username },
+      description: `
+    tyle czasu ci brakuje: ${format(howMuchTimeUserNeed(timeObj))}  
+    `,
+    },
+    // do rangi: ${roleData(msg, roleObj)}
+  });
 }
 
 module.exports = {

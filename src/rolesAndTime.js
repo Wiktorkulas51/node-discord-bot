@@ -11,7 +11,7 @@ function rolesAndTimeData() {
     month3: 7889400000,
     month6: 15778800000,
   };
-  const roleObj = [
+  const roleArr = [
     "776098643014582302",
     "776098666611343360",
     "776098806454419476",
@@ -19,15 +19,17 @@ function rolesAndTimeData() {
     "776098842554269766",
     "776098859990122498",
     "776098878247534593",
-    "776098878247534593",
     "776098896211869728",
     "776098915891544104",
     "776098937923960842",
   ];
 
+  // const roleAndTimeData = {
+
+  // }
   return {
     timeObj: timeObj,
-    roleObj: roleObj,
+    roleArr: roleArr,
   };
 }
 module.exports = {

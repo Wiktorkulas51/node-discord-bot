@@ -79,7 +79,7 @@ client.on("message", async (msg) => {
           if (userDataObj.filteredValue[0] === true) {
             const { userTimeDiff } = jsonFileObj[userDataObj.index].userData;
             if (CMD_NAME === "time" && args[0] === "left") {
-              utiles.timeUserNeedForNextRole(msg, userTimeDiff);
+              return utiles.timeUserNeedForNextRole(msg, userTimeDiff);
             }
 
             const time = utiles.timeCounter(userTimeDiff);
