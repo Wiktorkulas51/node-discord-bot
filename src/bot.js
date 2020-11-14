@@ -122,7 +122,7 @@ client.on("message", async (msg) => {
           } else {
             const { userTimeDiff } = jsonFileObj[userDataObj2.index].userData;
             const { useriD } = jsonFileObj[userDataObj2.index].userData;
-            msg.delete();
+
             utiles.addRoleByTime(userTimeDiff, useriD, msg);
           }
           break;
@@ -140,7 +140,7 @@ client.on("message", async (msg) => {
               color: 0xe6357c,
               author: { name: msg.author.username },
               description: `
-Role jakie są dostępne 
+                Role jakie są dostępne 
               `,
             },
           });

@@ -1,8 +1,6 @@
-const { KeyObject } = require("crypto");
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const { async } = require("replace/bin/shared-options");
 const { rolesAndTimeData } = require("./rolesAndTime");
 
 function regulationsAccept(client) {
@@ -167,6 +165,12 @@ async function findUser(file, msg, arr = []) {
   return { arr: arr, filteredValue: filteredValue, index: index };
 }
 
+function removeRole(msg, arr) {
+  for (let i = 0; i <= arr.length; i++) {
+    if (msg.member.roles.cache.has(arr[i])) msg.member.roles.remove(arr[i]);
+  }
+}
+
 function addRoleByTime(time, id, msg) {
   const member = msg.guild.members.cache.get(id);
   const { timeObj, roleArr } = rolesAndTimeData();
@@ -175,19 +179,21 @@ function addRoleByTime(time, id, msg) {
   if (msg.member.roles.cache.has(roleArr[roleArr.length - 1]))
     return msg.reply("Posiadasz już najwyższą role");
 
+  removeRole(msg, roleArr);
+
   const roles = async (role) => {
     let userRole;
     msg.guild.roles.cache.each((data) => {
-      if (!member._roles.find((value) => value === role)) {
-        role === data.id
-          ? (userRole = {
-              id: data.id,
-              name: data.name,
-              color: data.color,
-            })
-          : "soemthing went wrong";
-      } else {
-        return (userRole = undefined);
+      if (member._roles.find((value) => value === data.id)) {
+        if (role.find((val) => val === data.id)) {
+          userRole = {
+            id: data.id,
+            name: data.name,
+            color: data.color,
+          };
+        } else {
+          return (userRole = undefined);
+        }
       }
     });
     return userRole;
@@ -195,24 +201,31 @@ function addRoleByTime(time, id, msg) {
 
   const embMsg = async (roleData, msg) => {
     const role = await roleData;
-    if (role === undefined) {
-      return msg.channel.send({
-        embed: {
-          title: "Ulepszone role",
-          color: 0xe6357c,
-          author: { name: msg.author.username },
-          description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanale głosowym by dostać kolejną 🔥  `,
-        },
-      });
-    } else {
-      return msg.channel.send({
-        embed: {
-          title: "Ulepszone role",
-          color: 0xe6357c,
-          author: { name: msg.author.username },
-          description: `Otrzymałeś właśnie nową rage 🔥 , nazwa rangi: ${await role.name} oraz color danej rangi: ${await role.color} `,
-        },
-      });
+    const user = await fetchUser(msg, msg.member.id);
+    msg.delete();
+    try {
+      console.log(role);
+      if (role !== undefined) {
+        return msg.channel.send({
+          embed: {
+            title: "Ulepszone role",
+            color: 0xe6357c,
+            author: { name: msg.author.username },
+            description: `Otrzymałeś właśnie nową rage 🔥 , nazwa rangi: ${await role.name} oraz color danej rangi: ${await role.color} `,
+          },
+        });
+      } else {
+        return msg.channel.send({
+          embed: {
+            title: "Ulepszone role",
+            color: 0xe6357c,
+            author: { name: msg.author.username },
+            description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanale głosowym by dostać kolejną 🔥  `,
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -241,12 +254,11 @@ function addRoleByTime(time, id, msg) {
         return (val = true);
       }
     });
-
     if (val) {
-      embMsg(roles(roles), msg);
-      return member.roles.add(role[index]);
+      member.roles.add(role[index]);
+      return embMsg(roles(role), msg);
     }
-
+    msg.delete();
     return msg.channel.send({
       embed: {
         color: 0xe6357c,
@@ -267,31 +279,13 @@ function addRoleByTime(time, id, msg) {
 }
 
 //end this func
-function timeUserNeedForNextRole(msg, userTimeDIff) {
+async function timeUserNeedForNextRole(msg, userTimeDIff) {
   const { timeObj, roleArr } = rolesAndTimeData();
-
-  // bug
-  const merg = (timeObj, roleArr) => {
-    let finalObj;
-
-    for (let key in timeObj) {
-      const objKey = timeObj[key];
-      finalObj = {
-        name: key,
-        time: objKey,
-        ...roleArr,
-      };
-
-      console.log(finalObj);
-    }
-  };
-
-  merg(timeObj, roleArr);
 
   if (msg.member.roles.cache.has(roleArr[roleArr.length - 1]))
     return msg.reply("Posiadasz już najwyższą role");
 
-  const howMuchTimeUserNeed = (timeObj) => {
+  const howMuchTimeUserNeed = () => {
     for (let key in timeObj) {
       const objKey = timeObj[key];
       const diff = userTimeDIff - objKey;
@@ -302,23 +296,31 @@ function timeUserNeedForNextRole(msg, userTimeDIff) {
     }
   };
 
-  // const roleInfo = (msg, roleArr) => {
-  //   roleArr.forEach(async (el) => {
-  //     const guildRoles = await msg.guild.roles
-  //       .fetch(el)
-  //       .then((el) => {
-  //         return {
-  //           name: el.name,
-  //           id: el.id,
-  //         };
-  //       })
-  //       .catch((err) => console.log(err));
+  const checkUserRoles = async () => {
+    const user = await fetchUser(msg, msg.member.id);
 
-  //     console.log(guildRoles.name, guildRoles.id);
-  //   });
-  // };
+    let index = roleArr.findIndex((el) => {
+      return user._roles.findIndex((val) => val === el) !== -1;
+    });
+    if (index === -1) {
+      return msg.reply("wpisz $upgrade");
+    }
+    return (index += 1);
+  };
 
-  // roleInfo(msg, roleArr);
+  const roleInfo = async () => {
+    const index = await checkUserRoles();
+    const roleID = roleArr[index];
+    try {
+      const roleName = await msg.guild.roles
+        .fetch(roleID)
+        .then((el) => el.name);
+
+      return roleName;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   msg.delete();
 
@@ -328,10 +330,10 @@ function timeUserNeedForNextRole(msg, userTimeDIff) {
       color: 0xe6357c,
       author: { name: msg.author.username },
       description: `
-    tyle czasu ci brakuje: ${format(howMuchTimeUserNeed(timeObj))}  
+    tyle czasu ci brakuje: ${format(howMuchTimeUserNeed())}  
+    do rangi: ${await roleInfo()}
     `,
     },
-    // do rangi: ${roleData(msg, roleObj)}
   });
 }
 
