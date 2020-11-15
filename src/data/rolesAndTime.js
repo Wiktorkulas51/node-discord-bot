@@ -1,4 +1,4 @@
-function rolesAndTimeData() {
+module.exports = function rolesAndTimeData() {
   const timeObj = {
     hour: 3600000,
     hour5: 18000000,
@@ -31,7 +31,4 @@ function rolesAndTimeData() {
     timeObj: timeObj,
     roleArr: roleArr,
   };
-}
-module.exports = {
-  rolesAndTimeData,
 };

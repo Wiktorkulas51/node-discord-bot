@@ -71,7 +71,7 @@ module.exports = class UserTime {
         console.log("empty");
         let userData = JSON.stringify(this.userObj, null, 4);
         fs.appendFileSync(
-          path.join(__dirname, "./files", "usersData.json"),
+          path.join(__dirname, "./data", "usersData.json"),
           `[{"key":"${key}", "userData":${userData}} ]`
         );
       } else {
@@ -94,7 +94,7 @@ module.exports = class UserTime {
                 jsonUserJoinedData ? jsonUserJoinedData : null
               },`,
               replacement: `"userJoind": ${this.userObj.userJoind},`,
-              paths: [path.join(__dirname, "./files", "usersData.json")],
+              paths: [path.join(__dirname, "./data", "usersData.json")],
               recursive: true,
               silent: true,
             });
@@ -109,7 +109,7 @@ module.exports = class UserTime {
             replace({
               regex: `}} `,
               replacement: `}}, {"key":"${key}", "userData":${userData}} `,
-              paths: [path.join(__dirname, "./files", "usersData.json")],
+              paths: [path.join(__dirname, "./data", "usersData.json")],
               recursive: true,
               silent: true,
             });
@@ -127,7 +127,7 @@ module.exports = class UserTime {
             replace({
               regex: `"userLeft": ${userLeft ? userLeft : null},`,
               replacement: `"userLeft": ${this.userObj.userLeft},`,
-              paths: [path.join(__dirname, "./files", "usersData.json")],
+              paths: [path.join(__dirname, "./data", "usersData.json")],
               recursive: true,
               silent: true,
             });
@@ -142,7 +142,7 @@ module.exports = class UserTime {
               replace({
                 regex: `"userTimeDiff": ${userTimeDiff ? userTimeDiff : null}`,
                 replacement: `"userTimeDiff": ${await diff}`,
-                paths: [path.join(__dirname, "./files", "usersData.json")],
+                paths: [path.join(__dirname, "./data", "usersData.json")],
                 recursive: true,
                 silent: true,
               });

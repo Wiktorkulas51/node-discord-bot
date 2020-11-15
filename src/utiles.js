@@ -1,78 +1,6 @@
-const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const { rolesAndTimeData } = require("./rolesAndTime");
-
-function regulationsAccept(client) {
-  const reactionEmoji = "🆗";
-  client.on("message", (msg) => {
-    if (msg.channel.id === "769641089668874321") {
-      if (msg.author.bot) return;
-
-      const MsgEmb = new MessageEmbed()
-        .setTitle(`use reaction ${reactionEmoji}`)
-        .setDescription(
-          `
-          Żeby otrzymać dostęp do kanału zostaw reakcję poniżej:🆗
-          
-          Jeśli chcecie uprawnienia do DJ'a, wybierzcie reakcje poniżej :musical_keyboard:🎹
-          
-          Jeśli chcecie otrzymywać powiadomienia odnośnie darmowych gier oraz promocji, wybierzcie reakcje poniżej:🧅
-
-          jęśli chcecie uprawnienia do kanału NSFW: 🔥
-        `
-        )
-        .setColor(0xdd9323)
-        .setFooter(`ID: ${msg.author.id}`);
-
-      msg.channel.send(MsgEmb).then((msg) => {
-        msg.react(reactionEmoji);
-        msg.react("🎹");
-        msg.react("🧅");
-        msg.react("🔥");
-        client.on("messageReactionAdd", (reactions, user) => {
-          const { name } = reactions.emoji;
-          const member = reactions.message.guild.members.cache.get(user.id);
-          if (user.username === "nodeBot-test") return;
-          switch (name) {
-            case reactionEmoji:
-              member.roles.add("772170235100135455");
-              break;
-            case "🔥":
-              member.roles.add("772170250166206535");
-              break;
-            case "🎹":
-              member.roles.add("772170236765929553");
-              break;
-            case "🧅":
-              member.roles.add("772170248329101312");
-            default:
-              break;
-          }
-        });
-        client.on("messageReactionRemove", (reactions, user) => {
-          const { name } = reactions.emoji;
-          const mebmer = reactions.message.guild.members.cache.get(user.id);
-          switch (name) {
-            case reactionEmoji:
-              mebmer.roles.remove("772170235100135455");
-              break;
-            case "🔥":
-              mebmer.roles.remove("772170250166206535");
-              break;
-            case "🎹":
-              mebmer.roles.remove("772170236765929553");
-              break;
-            case "🧅":
-              mebmer.roles.remove("772170248329101312");
-            default:
-              break;
-          }
-        });
-      });
-    }
-  });
-}
+const rolesAndTimeData = require("./data/rolesAndTime");
 
 function fetchUser(msg, id) {
   const user = msg.guild.members.fetch(id);
@@ -87,7 +15,7 @@ function isEmpty(obj) {
 }
 
 function readingFileSync(fileName) {
-  const fileDate = fs.readFileSync(path.join(__dirname, "./files", fileName));
+  const fileDate = fs.readFileSync(path.join(__dirname, "./data", fileName));
   if (isEmpty(fileDate)) return null;
 
   return JSON.parse(fileDate);
@@ -171,111 +99,13 @@ function removeRole(msg, arr) {
   }
 }
 
-function addRoleByTime(time, id, msg) {
-  const member = msg.guild.members.cache.get(id);
-  const { timeObj, roleArr } = rolesAndTimeData();
-  const timeArr = [];
+async function userRolesExist(msg, arr) {
+  const user = await fetchUser(msg, msg.member.id);
 
-  if (msg.member.roles.cache.has(roleArr[roleArr.length - 1]))
-    return msg.reply("Posiadasz już najwyższą role");
-
-  removeRole(msg, roleArr);
-
-  const roles = async (role) => {
-    let userRole;
-    msg.guild.roles.cache.each((data) => {
-      if (member._roles.find((value) => value === data.id)) {
-        if (role.find((val) => val === data.id)) {
-          userRole = {
-            id: data.id,
-            name: data.name,
-            color: data.color,
-          };
-        } else {
-          return (userRole = undefined);
-        }
-      }
-    });
-    return userRole;
-  };
-
-  const embMsg = async (roleData, msg) => {
-    const role = await roleData;
-    const user = await fetchUser(msg, msg.member.id);
-    msg.delete();
-    try {
-      console.log(role);
-      if (role !== undefined) {
-        return msg.channel.send({
-          embed: {
-            title: "Ulepszone role",
-            color: 0xe6357c,
-            author: { name: msg.author.username },
-            description: `Otrzymałeś właśnie nową rage 🔥 , nazwa rangi: ${await role.name} oraz color danej rangi: ${await role.color} `,
-          },
-        });
-      } else {
-        return msg.channel.send({
-          embed: {
-            title: "Ulepszone role",
-            color: 0xe6357c,
-            author: { name: msg.author.username },
-            description: `Posiadasz już obecnie nową range 😁, spędź trochę więcej czasu na kanale głosowym by dostać kolejną 🔥  `,
-          },
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const checkTimeAndGiveRole = async (
-    firstValue,
-    promiseSecondValue,
-    promiseRole,
-    msg
-  ) => {
-    const secondValue = await promiseSecondValue;
-    const role = await promiseRole.reverse();
-    let index;
-
-    const val = secondValue.some((val) => {
-      if (firstValue >= val) {
-        const i = secondValue
-          .slice()
-          .reverse()
-          .findIndex((val) => {
-            if (firstValue >= val) {
-              return (val = true);
-            }
-          });
-        index = i;
-
-        return (val = true);
-      }
-    });
-    if (val) {
-      member.roles.add(role[index]);
-      return embMsg(roles(role), msg);
-    }
-    msg.delete();
-    return msg.channel.send({
-      embed: {
-        color: 0xe6357c,
-        author: { name: msg.author.username },
-        description: `Nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲
-         Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $need 🚀`,
-      },
-    });
-  };
-  const iterationOverTimeObj = async () => {
-    for (let key in timeObj) {
-      timeArr.push(await timeObj[key]);
-    }
-    return timeArr;
-  };
-
-  checkTimeAndGiveRole(time, iterationOverTimeObj(), roleArr, msg);
+  const roleExist = arr.find((firstEl) => {
+    return user._roles.find((secEl) => firstEl === secEl);
+  });
+  return roleExist;
 }
 
 //end this func
@@ -298,6 +128,9 @@ async function timeUserNeedForNextRole(msg, userTimeDIff) {
 
   const checkUserRoles = async () => {
     const user = await fetchUser(msg, msg.member.id);
+    if (userTimeDIff <= timeObj.hour) {
+      return 0;
+    }
 
     let index = roleArr.findIndex((el) => {
       return user._roles.findIndex((val) => val === el) !== -1;
@@ -310,6 +143,7 @@ async function timeUserNeedForNextRole(msg, userTimeDIff) {
 
   const roleInfo = async () => {
     const index = await checkUserRoles();
+
     const roleID = roleArr[index];
     try {
       const roleName = await msg.guild.roles
@@ -338,7 +172,6 @@ async function timeUserNeedForNextRole(msg, userTimeDIff) {
 }
 
 module.exports = {
-  regulationsAccept,
   checkTime,
   fetchUser,
   format,
@@ -346,7 +179,8 @@ module.exports = {
   readingFileSync,
   isEmpty,
   findUser,
-  addRoleByTime,
-  rolesAndTimeData,
+  removeRole,
+  userRolesExist,
+  // addRoleByTime,
   timeUserNeedForNextRole,
 };

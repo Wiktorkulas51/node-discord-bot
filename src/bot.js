@@ -2,7 +2,8 @@ require("dotenv").config();
 const { Client } = require("discord.js");
 const utiles = require("./utiles");
 const UserTime = require("./UserTIme");
-const { rolesAndTimeData } = require("./rolesAndTime");
+const regulationsAccept = require("./components/regulations");
+const rolesAndTimeData = require("./data/rolesAndTime");
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
@@ -29,13 +30,6 @@ client.on("message", async (msg) => {
         .substring(prefix.length)
         .split(/\s+/);
       console.log(CMD_NAME, args);
-
-      // if (CMD_NAME === "role") {
-      //   msg.reply("choose your roles");
-      //   if (msg.content === "choose your roles") {
-      //     console.log(msg.reactions);
-      //   }
-      // }
 
       if (CMD_NAME === "time" && args[0] === "all") {
         const id =
@@ -64,39 +58,8 @@ client.on("message", async (msg) => {
 
       switch (CMD_NAME) {
         case "time":
-          if (utiles.isEmpty(jsonFileObj)) {
-            msg.delete();
-            msg.reply("plik jest pusty, upewnij się, że dołączyłeś na kanał");
-            return;
-          }
-
-          const userDataObj = await utiles.findUser(jsonFileObj, msg);
-
-          const everyValFalse = userDataObj.arr.every(
-            (currentValue) => currentValue === false
-          );
-
-          if (userDataObj.filteredValue[0] === true) {
-            const { userTimeDiff } = jsonFileObj[userDataObj.index].userData;
-            if (CMD_NAME === "time" && args[0] === "left") {
-              return utiles.timeUserNeedForNextRole(msg, userTimeDiff);
-            }
-
-            const time = utiles.timeCounter(userTimeDiff);
-            utiles.format(time);
-            msg.delete();
-
-            utiles.checkTime(
-              msg,
-              time.sec === 0 && time.min === 0
-                ? "nie byłes jeszcze na żadnym kanale"
-                : utiles.format(time),
-              jsonFileObj[userDataObj.index].userData.name
-            );
-          } else if (everyValFalse) {
-            msg.delete();
-            msg.reply("nie dołączyłeś jeszcze na żaden kanał");
-          }
+          const time = require("./components/commands/time");
+          time(msg, jsonFileObj, CMD_NAME, args);
           break;
 
         case "summon":
@@ -114,6 +77,7 @@ client.on("message", async (msg) => {
           break;
 
         case "upgrade":
+          const upgrade = require("./components/commands/upgrade");
           const userDataObj2 = await utiles.findUser(jsonFileObj, msg);
 
           if (userDataObj2.index === -1) {
@@ -123,7 +87,7 @@ client.on("message", async (msg) => {
             const { userTimeDiff } = jsonFileObj[userDataObj2.index].userData;
             const { useriD } = jsonFileObj[userDataObj2.index].userData;
 
-            utiles.addRoleByTime(userTimeDiff, useriD, msg);
+            upgrade(userTimeDiff, useriD, msg);
           }
           break;
 
@@ -134,18 +98,24 @@ client.on("message", async (msg) => {
         //end this
         case "roles":
           msg.delete();
-          msg.channel.send({
-            embed: {
-              title: "Role",
-              color: 0xe6357c,
-              author: { name: msg.author.username },
-              description: `
-                Role jakie są dostępne 
-              `,
-            },
+          const { roleArr } = rolesAndTimeData();
+          roleArr.forEach((el) => {
+            const role = msg.guild.roles.cache.get(el);
+
+            return msg.channel.send({
+              embed: {
+                title: "Role",
+                color: 0xe6357c,
+                author: { name: msg.author.username },
+                description: `
+                  Wszystkie role jakie możesz odblokować po pewnym czasie: ${role.name}
+                `,
+              },
+            });
           });
+
           break;
-        //make a guide
+
         case "guide":
           msg.delete();
           msg.channel.send({
@@ -156,9 +126,11 @@ client.on("message", async (msg) => {
               description: `
             Wszystkie komendy zaczynają się od prefixa $, żeby komenda się wykonała musisz wpisać $ + słowo
 
-              $time, zwraca ilość 
+              $time, zwraca ilość czasu spędzonego na kanle 
 
-              $time all, komenda tylko dla Morysa oraz wiktora
+              $time all, komenda tylko dla Morysa i wiktora
+
+              $time left ile czasu ci brakuje do następnej rangi
 
               $summon, summonujesz bota na kanał
 
@@ -166,7 +138,7 @@ client.on("message", async (msg) => {
 
               $play, nic dodać nic ująć
 
-              $role jakie można dostac po określonej ilości czasu
+              $role jakie można dostać rangi 
               `,
             },
           });
@@ -181,7 +153,7 @@ client.on("message", async (msg) => {
   }
 });
 
-utiles.regulationsAccept(client);
+regulationsAccept(client);
 
 //on key create role
 
