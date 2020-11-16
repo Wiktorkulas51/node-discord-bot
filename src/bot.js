@@ -31,6 +31,23 @@ client.on("message", async (msg) => {
         .split(/\s+/);
       console.log(CMD_NAME, args);
 
+      if (CMD_NAME === "roll") {
+        return msg.channel.send({
+          embed: {
+            title: "ROLLOWANKO",
+            color: 0xe6357c,
+            author: { name: msg.author.username },
+            description: `
+            Uwaga!
+            
+            Liczby losowanę są od 1 do ${!args.length ? "100" : args[0]}
+
+             twoja wyrollowana wartość: ${utiles.rolling(msg, args)} 
+            `,
+          },
+        });
+      }
+
       if (CMD_NAME === "time" && args[0] === "all") {
         const id =
           msg.author.id === "278950668558139392" ||
@@ -104,7 +121,7 @@ client.on("message", async (msg) => {
 
             return msg.channel.send({
               embed: {
-                title: "Role",
+                title: "ROLE",
                 color: 0xe6357c,
                 author: { name: msg.author.username },
                 description: `
@@ -120,25 +137,27 @@ client.on("message", async (msg) => {
           msg.delete();
           msg.channel.send({
             embed: {
-              title: "Komendy",
+              title: "KOMENDY",
               color: 0xe6357c,
               author: { name: msg.author.username },
               description: `
-            Wszystkie komendy zaczynają się od prefixa $, żeby komenda się wykonała musisz wpisać $ + słowo
+            Wszystkie komendy zaczynają się od prefixa $, żeby komenda się wykonała musisz wpisać $ + słowo.
 
-              $time, zwraca ilość czasu spędzonego na kanle 
+              $time, zwraca ilość czasu spędzonego na kanle.
 
-              $time all, komenda tylko dla Morysa i wiktora
+              $time all, komenda tylko dla Morysa i wiktora.
 
-              $time left ile czasu ci brakuje do następnej rangi
+              $time left ile czasu ci brakuje do następnej rangi.
 
-              $summon, summonujesz bota na kanał
+              $summon, summonujesz bota na kanał.
 
-              $upgrade, po sędzonej określonej ilości czasu możesz wpisać tą komendę i dostać ciekawą rangę
+              $upgrade, po sędzonej określonej ilości czasu możesz wpisać tą komendę i dostać ciekawą rangę.
 
-              $play, nic dodać nic ująć
+              $play, nic dodać nic ująć.
 
-              $role jakie można dostać rangi 
+              $role jakie można dostać rangi.
+
+              $roll losuje dla ciebie wartość liczbową zaczynając od zera do 100, ta komenda przyjume też argument do jakiej wartości ma rollować liczbę.
               `,
             },
           });

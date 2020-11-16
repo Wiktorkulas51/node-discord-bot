@@ -25,9 +25,7 @@ module.exports = async function (msg, jsonFileObj, CMD_NAME, args) {
 
     utiles.checkTime(
       msg,
-      time.sec === 0 && time.min === 0
-        ? "nie byłes jeszcze na żadnym kanale"
-        : utiles.format(time),
+      utiles.format(time),
       jsonFileObj[userDataObj.index].userData.name
     );
   } else if (everyValFalse) {

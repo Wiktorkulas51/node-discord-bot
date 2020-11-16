@@ -99,8 +99,6 @@ module.exports = class UserTime {
               silent: true,
             });
           } else if (everyValFalse || jsonFileObj.length === 1) {
-            //bugs
-
             console.log("inny user");
             key = this.keyGen();
             let userData = JSON.stringify(this.userObj, null, 4);

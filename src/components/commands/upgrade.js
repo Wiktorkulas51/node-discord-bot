@@ -30,7 +30,7 @@ module.exports = function upgrade(time, id, msg) {
 
       return msg.channel.send({
         embed: {
-          title: "Ulepszone role",
+          title: "ULEPSZENIE RANGI 🔥",
           color: 0xe6357c,
           author: { name: msg.author.username },
           description:
@@ -45,41 +45,40 @@ module.exports = function upgrade(time, id, msg) {
   };
 
   const checkTimeAndGiveRole = async (
-    firstValue,
+    userTime,
     promiseSecondValue,
     promiseRole,
     msg
   ) => {
-    const secondValue = await promiseSecondValue;
+    const arrayOfTimeData = await promiseSecondValue;
     const roleArr = await promiseRole.reverse();
     let index;
-
-    const val = secondValue.some((val) => {
-      if (firstValue >= val) {
-        const i = secondValue
+    //
+    const userReadyForRole = arrayOfTimeData.some((el) => {
+      if (userTime >= el) {
+        const i = arrayOfTimeData
           .slice()
           .reverse()
-          .findIndex((val) => {
-            if (firstValue >= val) {
-              return (val = true);
-            }
+          .findIndex((indexEl) => {
+            if (userTime >= indexEl) return (indexEl = true);
           });
         index = i;
 
-        return (val = true);
+        return (el = true);
       }
     });
-    if (val) {
+    if (userReadyForRole) {
       member.roles.add(roleArr[index]);
       return embMsg(roles(roleArr, roleArr[index]), msg);
     }
     msg.delete();
     return msg.channel.send({
       embed: {
+        Title: "ULEPSZANIE RANGI 🔥",
         color: 0xe6357c,
         author: { name: msg.author.username },
         description: `Nie odpowiednia ilość czasu, jeżeli chcesz dowiedzieć się jaki masz aktualnie czas, wpisze $time ⏲
-           Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $need 🚀`,
+           Natomiast jeżeli chcesz zobaczyć ile czasu potrzebujesz spędzić na kanlę, żeby dostać taką rangę wpisz $time left 🚀`,
       },
     });
   };

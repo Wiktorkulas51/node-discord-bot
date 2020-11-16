@@ -33,7 +33,7 @@ const format = ({ sec, min, hours, days, months, years }) => {
     pluralize("Year", years % 365),
     pluralize("Month", months % 12),
     pluralize("Day", days % 7),
-    pluralize("Houur", hours % 24),
+    pluralize("Hour", hours % 24),
     pluralize("Minute", min % 60),
     pluralize("Secund", sec % 60),
 
@@ -77,10 +77,10 @@ function checkTime(msg, timeData, name) {
 async function findUser(file, msg, arr = []) {
   if (isEmpty(file)) return;
   for (let key of file) {
-    const check =
+    const userExists =
       msg.author.username === key.userData.name &&
       msg.author.id === key.userData.useriD;
-    arr.push(await check);
+    arr.push(await userExists);
   }
 
   let index;
@@ -108,7 +108,6 @@ async function userRolesExist(msg, arr) {
   return roleExist;
 }
 
-//end this func
 async function timeUserNeedForNextRole(msg, userTimeDIff) {
   const { timeObj, roleArr } = rolesAndTimeData();
 
@@ -119,25 +118,20 @@ async function timeUserNeedForNextRole(msg, userTimeDIff) {
     for (let key in timeObj) {
       const objKey = timeObj[key];
       const diff = userTimeDIff - objKey;
-
-      if (Math.sign(diff) === -1) {
-        return timeCounter(diff);
-      }
+      if (Math.sign(diff) === -1) return timeCounter(diff);
     }
   };
 
   const checkUserRoles = async () => {
     const user = await fetchUser(msg, msg.member.id);
-    if (userTimeDIff <= timeObj.hour) {
-      return 0;
-    }
+    if (userTimeDIff <= timeObj.hour) return 0;
 
     let index = roleArr.findIndex((el) => {
       return user._roles.findIndex((val) => val === el) !== -1;
     });
-    if (index === -1) {
-      return msg.reply("wpisz $upgrade");
-    }
+
+    if (index === -1) return msg.reply("wpisz $upgrade");
+
     return (index += 1);
   };
 
@@ -171,6 +165,14 @@ async function timeUserNeedForNextRole(msg, userTimeDIff) {
   });
 }
 
+function rolling(msg, args) {
+  const defaultValue = 100;
+  msg.delete();
+  if (!args.length) return Math.floor(Math.random() * defaultValue + 1);
+
+  return Math.floor(Math.random() * args[0]);
+}
+
 module.exports = {
   checkTime,
   fetchUser,
@@ -181,6 +183,7 @@ module.exports = {
   findUser,
   removeRole,
   userRolesExist,
+  rolling,
   // addRoleByTime,
   timeUserNeedForNextRole,
 };
